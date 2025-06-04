@@ -39,6 +39,8 @@ const GlobalStatistics: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>('global');
   const [selectedType, setSelectedType] = useState<string>('all');
   const [selectedEvent, setSelectedEvent] = useState<MarinePollutionEvent | null>(null);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+  const [itemsPerPage] = useState<number>(10);
 
   // 基于真实数据计算污染类型分布
   const calculatePollutionTypeData = (): PollutionData[] => {
@@ -124,6 +126,26 @@ const GlobalStatistics: React.FC = () => {
       return true;
     });
   };
+
+  const getPaginatedEvents = () => {
+    const filteredEvents = getFilteredEvents();
+    const startIndex = (currentPage - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    return filteredEvents.slice(startIndex, endIndex);
+  };
+
+  const getTotalPages = () => {
+    return Math.ceil(getFilteredEvents().length / itemsPerPage);
+  };
+
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
+  };
+
+  // 当筛选条件改变时重置页码
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedRegion, selectedType]);
 
   // 修复 Leaflet 图标问题
   useEffect(() => {
@@ -577,7 +599,7 @@ const GlobalStatistics: React.FC = () => {
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                {getFilteredEvents().slice(0, 10).map((event) => (
+                {getPaginatedEvents().map((event) => (
                   <tr key={event.id} className="hover:bg-gray-50">
                     <td className="px-4 py-3 font-medium text-gray-900">{event.name}</td>
                     <td className="px-4 py-3">
@@ -619,11 +641,74 @@ const GlobalStatistics: React.FC = () => {
             </table>
           </div>
           
-          {getFilteredEvents().length > 10 && (
-            <div className="mt-4 text-center">
-              <span className="text-sm text-gray-500">
-                显示前10个事件，共 {getFilteredEvents().length} 个事件
-              </span>
+          {/* Pagination */}
+          {getTotalPages() > 1 && (
+            <div className="mt-6 flex flex-col sm:flex-row justify-between items-center space-y-4 sm:space-y-0">
+              <div className="text-sm text-gray-500">
+                显示第 {(currentPage - 1) * itemsPerPage + 1} - {Math.min(currentPage * itemsPerPage, getFilteredEvents().length)} 个事件，
+                共 {getFilteredEvents().length} 个事件
+              </div>
+              
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => handlePageChange(currentPage - 1)}
+                  disabled={currentPage === 1}
+                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                    currentPage === 1
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  上一页
+                </button>
+                
+                <div className="flex items-center space-x-1">
+                  {Array.from({ length: getTotalPages() }, (_, i) => i + 1).map((page) => {
+                    // 显示当前页前后2页
+                    if (
+                      page === 1 ||
+                      page === getTotalPages() ||
+                      (page >= currentPage - 2 && page <= currentPage + 2)
+                    ) {
+                      return (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-3 py-2 text-sm font-medium rounded-md ${
+                            page === currentPage
+                              ? 'bg-ocean-600 text-white'
+                              : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      );
+                    } else if (
+                      page === currentPage - 3 ||
+                      page === currentPage + 3
+                    ) {
+                      return (
+                        <span key={page} className="px-2 py-2 text-gray-400">
+                          ...
+                        </span>
+                      );
+                    }
+                    return null;
+                  })}
+                </div>
+                
+                <button
+                  onClick={() => handlePageChange(currentPage + 1)}
+                  disabled={currentPage === getTotalPages()}
+                  className={`px-3 py-2 text-sm font-medium rounded-md ${
+                    currentPage === getTotalPages()
+                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                      : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
+                  }`}
+                >
+                  下一页
+                </button>
+              </div>
             </div>
           )}
         </motion.div>

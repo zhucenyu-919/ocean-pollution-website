@@ -62,6 +62,7 @@ const DeepThinking: React.FC = () => {
   const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [showQuizResults, setShowQuizResults] = useState(false);
+  const [activeTab, setActiveTab] = useState<'objectives' | 'chapters' | 'cases' | 'quiz'>('objectives');
 
   const modules: ThinkingModule[] = [
     {
@@ -400,83 +401,223 @@ const DeepThinking: React.FC = () => {
               {/* Tab Navigation */}
               <div className="border-b border-gray-200 px-6">
                 <nav className="flex space-x-8">
-                  <button className="py-4 px-1 border-b-2 border-ocean-600 text-ocean-600 font-medium">
+                  <button 
+                    onClick={() => setActiveTab('objectives')}
+                    className={`py-4 px-1 border-b-2 font-medium ${
+                      activeTab === 'objectives' 
+                        ? 'border-ocean-600 text-ocean-600' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
                     学习目标
                   </button>
-                  <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                  <button 
+                    onClick={() => setActiveTab('chapters')}
+                    className={`py-4 px-1 border-b-2 font-medium ${
+                      activeTab === 'chapters' 
+                        ? 'border-ocean-600 text-ocean-600' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
                     章节内容
                   </button>
-                  <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                  <button 
+                    onClick={() => setActiveTab('cases')}
+                    className={`py-4 px-1 border-b-2 font-medium ${
+                      activeTab === 'cases' 
+                        ? 'border-ocean-600 text-ocean-600' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
                     案例分析
                   </button>
-                  <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                  <button 
+                    onClick={() => setActiveTab('quiz')}
+                    className={`py-4 px-1 border-b-2 font-medium ${
+                      activeTab === 'quiz' 
+                        ? 'border-ocean-600 text-ocean-600' 
+                        : 'border-transparent text-gray-500 hover:text-gray-700'
+                    }`}
+                  >
                     小测验
                   </button>
                 </nav>
               </div>
 
-              {/* Learning Objectives */}
+              {/* Tab Content */}
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
-                  <Target className="h-6 w-6 mr-2 text-ocean-600" />
-                  学习目标
-                </h3>
-                <div className="space-y-3">
-                  {deepThinkingModulesContent[activeModuleContent.id]?.objectives.map((objective, index) => (
-                    <div key={index} className="flex items-start space-x-3">
-                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
-                      <p className="text-gray-700">{objective}</p>
+                {/* Learning Objectives Tab */}
+                {activeTab === 'objectives' && (
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <Target className="h-6 w-6 mr-2 text-ocean-600" />
+                      学习目标
+                    </h3>
+                    <div className="space-y-3">
+                      {deepThinkingModulesContent[activeModuleContent.id]?.objectives.map((objective, index) => (
+                        <div key={index} className="flex items-start space-x-3">
+                          <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                          <p className="text-gray-700">{objective}</p>
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                )}
 
-                {/* Chapters Preview */}
-                <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4 flex items-center">
-                  <BookOpen className="h-6 w-6 mr-2 text-ocean-600" />
-                  章节概览
-                </h3>
-                <div className="space-y-4">
-                  {deepThinkingModulesContent[activeModuleContent.id]?.chapters.map((chapter, index) => (
-                    <div key={index} className="ocean-card p-4">
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-gray-900">{chapter.title}</h4>
-                        <span className="text-sm text-gray-500 flex items-center">
-                          <Clock className="h-4 w-4 mr-1" />
-                          {chapter.readingTime}
-                        </span>
+                {/* Chapters Tab */}
+                {activeTab === 'chapters' && (
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <BookOpen className="h-6 w-6 mr-2 text-ocean-600" />
+                      章节内容
+                    </h3>
+                    <div className="space-y-6">
+                      {deepThinkingModulesContent[activeModuleContent.id]?.chapters.map((chapter, index) => (
+                        <div key={index} className="ocean-card p-6">
+                          <div className="flex justify-between items-start mb-4">
+                            <h4 className="text-lg font-semibold text-gray-900">{chapter.title}</h4>
+                            <span className="text-sm text-gray-500 flex items-center bg-gray-100 px-2 py-1 rounded">
+                              <Clock className="h-4 w-4 mr-1" />
+                              {chapter.readingTime}
+                            </span>
+                          </div>
+                          <div className="prose prose-gray max-w-none">
+                            <p className="text-gray-700 leading-relaxed whitespace-pre-line">{chapter.content}</p>
+                          </div>
+                          {chapter.videoUrl && (
+                            <div className="mt-4 pt-4 border-t border-gray-200">
+                              <button className="text-ocean-600 text-sm flex items-center hover:text-ocean-700 transition-colors">
+                                <Video className="h-4 w-4 mr-1" />
+                                观看相关视频
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Case Studies Tab */}
+                {activeTab === 'cases' && (
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <FileText className="h-6 w-6 mr-2 text-ocean-600" />
+                      案例分析
+                    </h3>
+                    <div className="space-y-6">
+                      {deepThinkingModulesContent[activeModuleContent.id]?.caseStudies.map((caseStudy, index) => (
+                        <div key={index} className="ocean-card p-6">
+                          <div className="flex items-start justify-between mb-4">
+                            <h4 className="text-lg font-semibold text-gray-900">{caseStudy.title}</h4>
+                            <span className="text-sm text-ocean-600 bg-ocean-50 px-2 py-1 rounded">
+                              {caseStudy.location}
+                            </span>
+                          </div>
+                          
+                          <div className="space-y-4">
+                            <div>
+                              <h5 className="font-medium text-gray-900 mb-2">事件概述</h5>
+                              <p className="text-gray-700 leading-relaxed">{caseStudy.summary}</p>
+                            </div>
+                            
+                            <div>
+                              <h5 className="font-medium text-gray-900 mb-2">环境影响</h5>
+                              <p className="text-gray-700 leading-relaxed">{caseStudy.impact}</p>
+                            </div>
+                            
+                            <div>
+                              <h5 className="font-medium text-gray-900 mb-2">解决方案</h5>
+                              <p className="text-gray-700 leading-relaxed">{caseStudy.solution}</p>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Quiz Tab */}
+                {activeTab === 'quiz' && (
+                  <div>
+                    <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                      <AlertCircle className="h-6 w-6 mr-2 text-ocean-600" />
+                      小测验
+                    </h3>
+                    
+                    {!showQuizResults ? (
+                      <div className="space-y-6">
+                        {deepThinkingModulesContent[activeModuleContent.id]?.quiz.map((question, index) => (
+                          <div key={index} className="ocean-card p-6">
+                            <h4 className="text-lg font-semibold text-gray-900 mb-4">
+                              题目 {index + 1}: {question.question}
+                            </h4>
+                            <div className="space-y-3">
+                              {question.options.map((option, optionIndex) => (
+                                <button
+                                  key={optionIndex}
+                                  onClick={() => handleQuizAnswer(optionIndex)}
+                                  className={`w-full text-left p-3 rounded-lg border transition-colors ${
+                                    quizAnswers[index] === optionIndex
+                                      ? 'border-ocean-600 bg-ocean-50 text-ocean-700'
+                                      : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
+                                  }`}
+                                >
+                                  {String.fromCharCode(65 + optionIndex)}. {option}
+                                </button>
+                              ))}
+                            </div>
+                            {quizAnswers[index] !== undefined && (
+                              <div className="mt-4 p-4 bg-blue-50 rounded-lg">
+                                <p className="text-sm text-blue-800">
+                                  <strong>解释：</strong>{question.explanation}
+                                </p>
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        
+                        {quizAnswers.length === deepThinkingModulesContent[activeModuleContent.id]?.quiz.length && (
+                          <div className="text-center">
+                            <button
+                              onClick={() => setShowQuizResults(true)}
+                              className="ocean-button px-8 py-3"
+                            >
+                              查看测验结果
+                            </button>
+                          </div>
+                        )}
                       </div>
-                      <p className="text-gray-600 text-sm mb-3">{chapter.content.substring(0, 100)}...</p>
-                      {chapter.videoUrl && (
-                        <button className="text-ocean-600 text-sm flex items-center hover:text-ocean-700">
-                          <Video className="h-4 w-4 mr-1" />
-                          观看视频
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-
-                {/* Quiz Section */}
-                {showQuizResults && (
-                  <div className="mt-8 ocean-card p-6 text-center">
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4">测验完成！</h3>
-                    <div className="text-5xl font-bold text-ocean-600 mb-2">
-                      {calculateQuizScore()}%
-                    </div>
-                    <p className="text-gray-600 mb-6">
-                      你答对了 {deepThinkingModulesContent[activeModuleContent.id]?.quiz.length || 0} 道题中的{' '}
-                      {deepThinkingModulesContent[activeModuleContent.id]?.quiz.filter((q, i) => quizAnswers[i] === q.correctAnswer).length} 道
-                    </p>
-                    <button
-                      onClick={() => {
-                        setCurrentQuizIndex(0);
-                        setQuizAnswers([]);
-                        setShowQuizResults(false);
-                      }}
-                      className="ocean-button"
-                    >
-                      重新测验
-                    </button>
+                    ) : (
+                      <div className="ocean-card p-8 text-center">
+                        <h4 className="text-2xl font-bold text-gray-900 mb-4">测验完成！</h4>
+                        <div className="text-6xl font-bold text-ocean-600 mb-4">
+                          {calculateQuizScore()}%
+                        </div>
+                        <p className="text-gray-600 mb-6 text-lg">
+                          你答对了 {deepThinkingModulesContent[activeModuleContent.id]?.quiz.length || 0} 道题中的{' '}
+                          {deepThinkingModulesContent[activeModuleContent.id]?.quiz.filter((q, i) => quizAnswers[i] === q.correctAnswer).length} 道
+                        </p>
+                        <div className="flex justify-center space-x-4">
+                          <button
+                            onClick={() => {
+                              setCurrentQuizIndex(0);
+                              setQuizAnswers([]);
+                              setShowQuizResults(false);
+                            }}
+                            className="ocean-button-secondary px-6 py-2"
+                          >
+                            重新测验
+                          </button>
+                          <button
+                            onClick={() => setActiveTab('objectives')}
+                            className="ocean-button px-6 py-2"
+                          >
+                            返回学习
+                          </button>
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>

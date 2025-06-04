@@ -121,7 +121,7 @@ const HomePage: React.FC = () => {
                 
                 <Link
                   to="/statistics"
-                  className="ocean-button-secondary text-lg px-8 py-4 border-white/30 text-white hover:bg-white/10"
+                  className="ocean-button-secondary text-lg px-8 py-4 border-white/50 text-white hover:bg-white/20 hover:border-white/70 transition-all duration-300"
                 >
                   查看数据
                 </Link>

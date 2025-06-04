@@ -807,11 +807,21 @@ const AnimationModels: React.FC = () => {
                 </div>
 
                 <div className="flex items-center space-x-4">
-                  <div className="flex items-center space-x-2">
+                  <div className="flex items-center space-x-3">
                     <Timer className="h-4 w-4 text-gray-500" />
-                    <span className="text-sm text-gray-600">
+                    <span className="text-sm text-gray-600 min-w-[60px]">
                       速度: {animationState.speed}x
                     </span>
+                    <input
+                      type="range"
+                      min={0.25}
+                      max={4}
+                      step={0.25}
+                      value={animationState.speed}
+                      onChange={(e) => setAnimationState(prev => ({ ...prev, speed: parseFloat(e.target.value) }))}
+                      className="w-20 h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                      title="调整播放速度"
+                    />
                   </div>
                   
                   <button
