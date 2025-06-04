@@ -12,8 +12,10 @@ import {
   Globe,
   Video,
   FileText,
-  Search
+  Search,
+  Link
 } from 'lucide-react';
+import ExternalLinks from '../components/ExternalLinks';
 
 interface Expert {
   id: string;
@@ -61,7 +63,7 @@ interface Resource {
 }
 
 const ExpertResources: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'experts' | 'institutions' | 'webinars' | 'downloads'>('experts');
+  const [activeTab, setActiveTab] = useState<'experts' | 'institutions' | 'webinars' | 'downloads' | 'links'>('experts');
   const [searchTerm, setSearchTerm] = useState('');
 
   // 处理外部链接点击
@@ -421,6 +423,16 @@ const ExpertResources: React.FC = () => {
             >
               资源下载
             </button>
+            <button
+              onClick={() => setActiveTab('links')}
+              className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
+                activeTab === 'links'
+                  ? 'bg-white text-ocean-600 shadow'
+                  : 'text-gray-600 hover:text-gray-900'
+              }`}
+            >
+              外部链接
+            </button>
           </nav>
         </div>
 
@@ -652,6 +664,15 @@ const ExpertResources: React.FC = () => {
                 </div>
               </motion.div>
             ))}
+          </motion.div>
+        )}
+
+        {activeTab === 'links' && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <ExternalLinks />
           </motion.div>
         )}
 
