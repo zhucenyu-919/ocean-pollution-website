@@ -11,6 +11,7 @@ import Footer from './components/Footer';
 import HomePage from './pages/HomePage';
 import DeepThinking from './pages/DeepThinking';
 import GlobalStatistics from './pages/GlobalStatistics';
+import PollutionDataShowcase from './pages/PollutionDataShowcase';
 import InteractiveLearning from './pages/InteractiveLearning';
 import AnimationModels from './pages/AnimationModels';
 import ExpertResources from './pages/ExpertResources';
@@ -31,6 +32,7 @@ function App() {
             <Route path="/" element={<HomePage />} />
             <Route path="/deep-thinking" element={<DeepThinking />} />
             <Route path="/statistics" element={<GlobalStatistics />} />
+            <Route path="/data-showcase" element={<PollutionDataShowcase />} />
             <Route path="/interactive-learning" element={<InteractiveLearning />} />
             <Route path="/animations" element={<AnimationModels />} />
             <Route path="/experts" element={<ExpertResources />} />

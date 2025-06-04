@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { BarChart3, TrendingUp, Globe, Filter, Download, MapPin } from 'lucide-react';
+import { BarChart3, TrendingUp, Globe, Filter, Download, MapPin, Calendar, AlertTriangle, Info } from 'lucide-react';
 import { 
   BarChart, 
   Bar, 
@@ -18,6 +18,14 @@ import {
 } from 'recharts';
 import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
+import { 
+  globalMarinePollutionEvents, 
+  pollutionTypeColors, 
+  severityColors, 
+  pollutionTypeLabels, 
+  severityLabels,
+  MarinePollutionEvent 
+} from '../data/globalMarinePollutionEvents';
 
 interface PollutionData {
   id: string;
@@ -27,111 +35,94 @@ interface PollutionData {
   color?: string;
 }
 
-interface PollutionEvent {
-  id: string;
-  lat: number;
-  lng: number;
-  type: string;
-  severity: 'low' | 'medium' | 'high' | 'critical';
-  location: string;
-  description: string;
-  date: string;
-}
-
 const GlobalStatistics: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>('global');
   const [selectedType, setSelectedType] = useState<string>('all');
+  const [selectedEvent, setSelectedEvent] = useState<MarinePollutionEvent | null>(null);
 
-  // 污染类型数据
-  const pollutionTypeData: PollutionData[] = [
-    { id: 'plastic', name: '塑料污染', value: 42, color: '#3B82F6' },
-    { id: 'chemical', name: '化学污染', value: 28, color: '#10B981' },
-    { id: 'oil', name: '石油污染', value: 18, color: '#F59E0B' },
-    { id: 'noise', name: '噪声污染', value: 8, color: '#8B5CF6' },
-    { id: 'other', name: '其他', value: 4, color: '#6B7280' }
-  ];
+  // 基于真实数据计算污染类型分布
+  const calculatePollutionTypeData = (): PollutionData[] => {
+    const typeCounts: { [key: string]: number } = {};
+    
+    globalMarinePollutionEvents.forEach(event => {
+      typeCounts[event.type] = (typeCounts[event.type] || 0) + 1;
+    });
 
-  // 历史趋势数据
-  const trendData = [
-    { year: '2020', plastic: 35, chemical: 25, oil: 20, total: 80 },
-    { year: '2021', plastic: 38, chemical: 26, oil: 18, total: 82 },
-    { year: '2022', plastic: 40, chemical: 27, oil: 19, total: 86 },
-    { year: '2023', plastic: 41, chemical: 28, oil: 18, total: 87 },
-    { year: '2024', plastic: 42, chemical: 28, oil: 18, total: 88 }
-  ];
+    const total = Object.values(typeCounts).reduce((sum, count) => sum + count, 0);
+    
+    return Object.entries(typeCounts).map(([type, count]) => ({
+      id: type,
+      name: pollutionTypeLabels[type as keyof typeof pollutionTypeLabels] || type,
+      value: Math.round((count / total) * 100),
+      color: pollutionTypeColors[type as keyof typeof pollutionTypeColors] || '#6B7280'
+    }));
+  };
 
-  // 全球污染事件数据
-  const pollutionEvents: PollutionEvent[] = [
-    {
-      id: '1',
-      lat: 20.5,
-      lng: -157.5,
-      type: 'plastic',
-      severity: 'critical',
-      location: '太平洋垃圾带',
-      description: '世界最大的海洋塑料聚集区',
-      date: '2024-01'
-    },
-    {
-      id: '2',
-      lat: 35.7,
-      lng: 139.7,
-      type: 'chemical',
-      severity: 'high',
-      location: '东京湾',
-      description: '工业化学污染严重',
-      date: '2024-02'
-    },
-    {
-      id: '3',
-      lat: 51.5,
-      lng: 0.1,
-      type: 'oil',
-      severity: 'medium',
-      location: '英吉利海峡',
-      description: '船舶石油泄漏事件',
-      date: '2024-01'
-    },
-    {
-      id: '4',
-      lat: -33.9,
-      lng: 18.4,
-      type: 'plastic',
-      severity: 'high',
-      location: '开普敦',
-      description: '海岸塑料垃圾堆积',
-      date: '2024-03'
-    },
-    {
-      id: '5',
-      lat: 1.3,
-      lng: 103.8,
-      type: 'noise',
-      severity: 'medium',
-      location: '新加坡海峡',
-      description: '航运噪声污染',
-      date: '2024-02'
-    }
-  ];
+  // 基于真实数据计算历史趋势
+  const calculateTrendData = () => {
+    const yearData: { [year: string]: { [type: string]: number } } = {};
+    
+    globalMarinePollutionEvents.forEach(event => {
+      const year = new Date(event.date).getFullYear().toString();
+      if (!yearData[year]) {
+        yearData[year] = {};
+      }
+      yearData[year][event.type] = (yearData[year][event.type] || 0) + 1;
+    });
+
+    return Object.entries(yearData)
+      .sort(([a], [b]) => parseInt(a) - parseInt(b))
+      .slice(-10) // 最近10年
+      .map(([year, types]) => ({
+        year,
+        oil_spill: types.oil_spill || 0,
+        nuclear: types.nuclear || 0,
+        chemical: types.chemical || 0,
+        plastic: types.plastic || 0,
+        industrial: types.industrial || 0,
+        mining: types.mining || 0,
+        total: Object.values(types).reduce((sum, count) => sum + count, 0)
+      }));
+  };
+
+  const pollutionTypeData = calculatePollutionTypeData();
+  const trendData = calculateTrendData();
 
   const getSeverityColor = (severity: string) => {
-    switch (severity) {
-      case 'critical': return '#DC2626';
-      case 'high': return '#F59E0B';
-      case 'medium': return '#10B981';
-      case 'low': return '#3B82F6';
-      default: return '#6B7280';
-    }
+    return severityColors[severity as keyof typeof severityColors] || '#6B7280';
   };
 
   const getSeverityRadius = (severity: string) => {
     switch (severity) {
-      case 'critical': return 20;
-      case 'high': return 15;
-      case 'medium': return 10;
-      case 'low': return 5;
-      default: return 5;
+      case 'catastrophic': return 25;
+      case 'high': return 18;
+      case 'medium': return 12;
+      case 'low': return 8;
+      default: return 8;
     }
+  };
+
+  const getFilteredEvents = () => {
+    return globalMarinePollutionEvents.filter(event => {
+      if (selectedType !== 'all' && event.type !== selectedType) return false;
+      if (selectedRegion !== 'global') {
+        // 简单的区域过滤逻辑
+        const [lng, lat] = event.coordinates;
+        switch (selectedRegion) {
+          case 'pacific':
+            return lng < -120 || lng > 120;
+          case 'atlantic':
+            return lng >= -80 && lng <= 20;
+          case 'indian':
+            return lng >= 20 && lng <= 120 && lat < 30;
+          case 'arctic':
+            return lat > 60;
+          default:
+            return true;
+        }
+      }
+      return true;
+    });
   };
 
   // 修复 Leaflet 图标问题
@@ -163,8 +154,18 @@ const GlobalStatistics: React.FC = () => {
             全球海洋污染统计图鉴
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-            通过交互式地图和数据可视化，深入了解全球海洋污染的分布现状和发展趋势
+            基于真实数据的全球重大海洋污染事件分析，通过交互式地图和数据可视化深入了解污染分布现状
           </p>
+          <div className="mt-4 flex justify-center items-center space-x-4 text-sm text-gray-500">
+            <div className="flex items-center">
+              <MapPin className="h-4 w-4 mr-1" />
+              <span>{globalMarinePollutionEvents.length} 个重大污染事件</span>
+            </div>
+            <div className="flex items-center">
+              <Calendar className="h-4 w-4 mr-1" />
+              <span>1984-2024年数据</span>
+            </div>
+          </div>
         </motion.div>
 
         {/* Controls */}
@@ -194,17 +195,24 @@ const GlobalStatistics: React.FC = () => {
                 className="border border-gray-300 rounded-lg px-3 py-2 focus:ring-2 focus:ring-ocean-500 focus:border-transparent"
               >
                 <option value="all">所有污染类型</option>
-                <option value="plastic">塑料污染</option>
+                <option value="oil_spill">石油泄漏</option>
+                <option value="nuclear">核污染</option>
                 <option value="chemical">化学污染</option>
-                <option value="oil">石油污染</option>
-                <option value="noise">噪声污染</option>
+                <option value="plastic">塑料污染</option>
+                <option value="industrial">工业污染</option>
+                <option value="mining">采矿污染</option>
               </select>
             </div>
             
-            <button className="ocean-button text-sm px-4 py-2 flex items-center space-x-2">
-              <Download className="h-4 w-4" />
-              <span>导出数据</span>
-            </button>
+            <div className="flex items-center space-x-2">
+              <span className="text-sm text-gray-600">
+                显示 {getFilteredEvents().length} 个事件
+              </span>
+              <button className="ocean-button text-sm px-4 py-2 flex items-center space-x-2">
+                <Download className="h-4 w-4" />
+                <span>导出数据</span>
+              </button>
+            </div>
           </div>
         </motion.div>
 
@@ -217,11 +225,10 @@ const GlobalStatistics: React.FC = () => {
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center">
             <Globe className="h-6 w-6 mr-2 text-ocean-600" />
-            交互式污染分布地图
+            全球重大海洋污染事件分布图
           </h2>
           
-          {/* Map Placeholder */}
-          <div className="h-96 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center relative overflow-hidden">
+          <div className="h-96 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg overflow-hidden">
             <MapContainer
               center={[20, 0]}
               zoom={2}
@@ -233,56 +240,85 @@ const GlobalStatistics: React.FC = () => {
                 url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
               />
               
-              {pollutionEvents
-                .filter(event => selectedType === 'all' || event.type === selectedType)
-                .map((event) => (
-                  <CircleMarker
-                    key={event.id}
-                    center={[event.lat, event.lng]}
-                    radius={getSeverityRadius(event.severity)}
-                    fillColor={getSeverityColor(event.severity)}
-                    color={getSeverityColor(event.severity)}
-                    weight={2}
-                    opacity={0.8}
-                    fillOpacity={0.6}
-                  >
-                    <Popup>
-                      <div className="p-2">
-                        <h4 className="font-bold text-gray-900">{event.location}</h4>
-                        <p className="text-sm text-gray-600 mt-1">{event.description}</p>
-                        <div className="mt-2 flex items-center justify-between">
+              {getFilteredEvents().map((event) => (
+                <CircleMarker
+                  key={event.id}
+                  center={[event.coordinates[1], event.coordinates[0]]}
+                  radius={getSeverityRadius(event.severity)}
+                  fillColor={getSeverityColor(event.severity)}
+                  color={getSeverityColor(event.severity)}
+                  weight={2}
+                  opacity={0.8}
+                  fillOpacity={0.6}
+                  eventHandlers={{
+                    click: () => setSelectedEvent(event)
+                  }}
+                >
+                  <Popup>
+                    <div className="p-3 max-w-sm">
+                      <h4 className="font-bold text-gray-900 mb-2">{event.name}</h4>
+                      <p className="text-sm text-gray-600 mb-2">{event.description}</p>
+                      <div className="space-y-2">
+                        <div className="flex items-center justify-between">
                           <span className="text-xs bg-gray-100 px-2 py-1 rounded">
-                            {event.type === 'plastic' && '塑料污染'}
-                            {event.type === 'chemical' && '化学污染'}
-                            {event.type === 'oil' && '石油污染'}
-                            {event.type === 'noise' && '噪声污染'}
+                            {pollutionTypeLabels[event.type as keyof typeof pollutionTypeLabels]}
                           </span>
-                          <span className="text-xs text-gray-500">{event.date}</span>
+                          <span className={`text-xs px-2 py-1 rounded text-white`} 
+                                style={{ backgroundColor: getSeverityColor(event.severity) }}>
+                            {severityLabels[event.severity as keyof typeof severityLabels]}
+                          </span>
+                        </div>
+                        <div className="text-xs text-gray-500">
+                          <div>📍 {event.location}</div>
+                          <div>📅 {new Date(event.date).toLocaleDateString('zh-CN')}</div>
+                          <div>📊 影响面积: {event.area}</div>
+                          {event.economicLoss && <div>💰 经济损失: {event.economicLoss}</div>}
                         </div>
                       </div>
-                    </Popup>
-                  </CircleMarker>
-                ))}
+                    </div>
+                  </Popup>
+                </CircleMarker>
+              ))}
             </MapContainer>
           </div>
           
           {/* Map Legend */}
-          <div className="mt-4 flex flex-wrap justify-center gap-4">
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-red-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">严重污染</span>
+          <div className="mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <div className="w-6 h-6 rounded-full" style={{ backgroundColor: severityColors.catastrophic }}></div>
+                <span className="text-sm font-medium">灾难性</span>
+              </div>
+              <span className="text-xs text-gray-500">
+                {globalMarinePollutionEvents.filter(e => e.severity === 'catastrophic').length} 事件
+              </span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-yellow-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">中度污染</span>
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <div className="w-5 h-5 rounded-full" style={{ backgroundColor: severityColors.high }}></div>
+                <span className="text-sm font-medium">严重</span>
+              </div>
+              <span className="text-xs text-gray-500">
+                {globalMarinePollutionEvents.filter(e => e.severity === 'high').length} 事件
+              </span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-green-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">轻度污染</span>
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <div className="w-4 h-4 rounded-full" style={{ backgroundColor: severityColors.medium }}></div>
+                <span className="text-sm font-medium">中等</span>
+              </div>
+              <span className="text-xs text-gray-500">
+                {globalMarinePollutionEvents.filter(e => e.severity === 'medium').length} 事件
+              </span>
             </div>
-            <div className="flex items-center space-x-2">
-              <div className="w-4 h-4 bg-blue-500 rounded-full"></div>
-              <span className="text-sm text-gray-600">保护区域</span>
+            <div className="text-center">
+              <div className="flex items-center justify-center space-x-2 mb-2">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: severityColors.low }}></div>
+                <span className="text-sm font-medium">轻微</span>
+              </div>
+              <span className="text-xs text-gray-500">
+                {globalMarinePollutionEvents.filter(e => e.severity === 'low').length} 事件
+              </span>
             </div>
           </div>
         </motion.div>
@@ -342,7 +378,7 @@ const GlobalStatistics: React.FC = () => {
             transition={{ delay: 0.4 }}
             className="ocean-card p-6"
           >
-            <h3 className="text-xl font-bold text-gray-900 mb-4">历史趋势分析</h3>
+            <h3 className="text-xl font-bold text-gray-900 mb-4">历史事件趋势</h3>
             <div className="h-64">
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={trendData}>
@@ -353,32 +389,38 @@ const GlobalStatistics: React.FC = () => {
                   <Legend />
                   <Line 
                     type="monotone" 
-                    dataKey="plastic" 
-                    stroke="#3B82F6" 
-                    name="塑料污染"
+                    dataKey="oil_spill" 
+                    stroke={pollutionTypeColors.oil_spill} 
+                    name="石油泄漏"
+                    strokeWidth={2}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="nuclear" 
+                    stroke={pollutionTypeColors.nuclear} 
+                    name="核污染"
                     strokeWidth={2}
                   />
                   <Line 
                     type="monotone" 
                     dataKey="chemical" 
-                    stroke="#10B981" 
+                    stroke={pollutionTypeColors.chemical} 
                     name="化学污染"
                     strokeWidth={2}
                   />
                   <Line 
                     type="monotone" 
-                    dataKey="oil" 
-                    stroke="#F59E0B" 
-                    name="石油污染"
+                    dataKey="plastic" 
+                    stroke={pollutionTypeColors.plastic} 
+                    name="塑料污染"
                     strokeWidth={2}
                   />
                 </LineChart>
               </ResponsiveContainer>
             </div>
             
-            <div className="mt-4 flex justify-between items-center text-sm">
-              <span className="text-gray-600">2020-2024年变化趋势</span>
-              <span className="text-red-600 font-semibold">↑ 10%</span>
+            <div className="mt-4 text-sm text-gray-600">
+              <p>基于 {globalMarinePollutionEvents.length} 个重大污染事件的历史数据分析</p>
             </div>
           </motion.div>
         </div>
@@ -388,7 +430,7 @@ const GlobalStatistics: React.FC = () => {
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
-          className="ocean-card p-8"
+          className="ocean-card p-8 mb-8"
         >
           <h2 className="text-2xl font-bold text-gray-900 mb-8 text-center">
             关键统计数据
@@ -396,82 +438,194 @@ const GlobalStatistics: React.FC = () => {
           
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="text-center">
-              <div className="text-3xl font-bold text-red-600 mb-2">8.3亿吨</div>
-              <div className="text-gray-600 text-sm">海洋塑料垃圾总量</div>
+              <div className="text-3xl font-bold text-red-600 mb-2">
+                {globalMarinePollutionEvents.filter(e => e.severity === 'catastrophic').length}
+              </div>
+              <div className="text-gray-600 text-sm">灾难性污染事件</div>
             </div>
             
             <div className="text-center">
-              <div className="text-3xl font-bold text-orange-600 mb-2">1,200万吨</div>
-              <div className="text-gray-600 text-sm">年塑料污染增量</div>
+              <div className="text-3xl font-bold text-orange-600 mb-2">
+                {globalMarinePollutionEvents.filter(e => e.type === 'oil_spill').length}
+              </div>
+              <div className="text-gray-600 text-sm">重大石油泄漏</div>
             </div>
             
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600 mb-2">40%</div>
-              <div className="text-gray-600 text-sm">来自亚洲地区</div>
+              <div className="text-3xl font-bold text-purple-600 mb-2">
+                {globalMarinePollutionEvents.filter(e => e.status === 'ongoing').length}
+              </div>
+              <div className="text-gray-600 text-sm">持续影响事件</div>
             </div>
             
             <div className="text-center">
-              <div className="text-3xl font-bold text-green-600 mb-2">600+</div>
-              <div className="text-gray-600 text-sm">受影响物种数量</div>
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                {globalMarinePollutionEvents.filter(e => e.casualties && e.casualties > 0).length}
+              </div>
+              <div className="text-gray-600 text-sm">造成人员伤亡</div>
             </div>
           </div>
         </motion.div>
 
-        {/* Regional Data */}
+        {/* Event Details Modal */}
+        {selectedEvent && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
+            onClick={() => setSelectedEvent(null)}
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              className="bg-white rounded-lg p-6 max-w-2xl w-full max-h-[80vh] overflow-y-auto"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <div className="flex justify-between items-start mb-4">
+                <h3 className="text-2xl font-bold text-gray-900">{selectedEvent.name}</h3>
+                <button
+                  onClick={() => setSelectedEvent(null)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  ✕
+                </button>
+              </div>
+              
+              <div className="space-y-4">
+                <div className="flex items-center space-x-4">
+                  <span className={`px-3 py-1 rounded-full text-white text-sm`}
+                        style={{ backgroundColor: getSeverityColor(selectedEvent.severity) }}>
+                    {severityLabels[selectedEvent.severity as keyof typeof severityLabels]}
+                  </span>
+                  <span className="px-3 py-1 bg-gray-100 text-gray-800 rounded-full text-sm">
+                    {pollutionTypeLabels[selectedEvent.type as keyof typeof pollutionTypeLabels]}
+                  </span>
+                </div>
+                
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">基本信息</h4>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      <div>📍 位置: {selectedEvent.location}</div>
+                      <div>📅 日期: {new Date(selectedEvent.date).toLocaleDateString('zh-CN')}</div>
+                      <div>⏱️ 持续时间: {selectedEvent.duration}</div>
+                      <div>📊 影响面积: {selectedEvent.area}</div>
+                    </div>
+                  </div>
+                  
+                  <div>
+                    <h4 className="font-semibold text-gray-900 mb-2">影响评估</h4>
+                    <div className="space-y-1 text-sm text-gray-600">
+                      {selectedEvent.casualties !== undefined && (
+                        <div>👥 伤亡人数: {selectedEvent.casualties}</div>
+                      )}
+                      {selectedEvent.economicLoss && (
+                        <div>💰 经济损失: {selectedEvent.economicLoss}</div>
+                      )}
+                      <div>🔄 状态: {
+                        selectedEvent.status === 'ongoing' ? '持续中' :
+                        selectedEvent.status === 'resolved' ? '已解决' : '部分解决'
+                      }</div>
+                    </div>
+                  </div>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">事件描述</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">{selectedEvent.description}</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">环境影响</h4>
+                  <p className="text-gray-600 text-sm leading-relaxed">{selectedEvent.impact}</p>
+                </div>
+                
+                <div>
+                  <h4 className="font-semibold text-gray-900 mb-2">数据来源</h4>
+                  <div className="flex flex-wrap gap-2">
+                    {selectedEvent.sources.map((source, index) => (
+                      <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 rounded text-xs">
+                        {source}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+
+        {/* Regional Data Table */}
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.6 }}
-          className="mt-8 ocean-card p-6"
+          className="ocean-card p-6"
         >
-          <h2 className="text-2xl font-bold text-gray-900 mb-6">区域污染数据对比</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6">重大污染事件列表</h2>
           
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
                 <tr className="bg-gray-50">
-                  <th className="px-4 py-3 text-left font-semibold text-gray-900">海域</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-900">污染指数</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-900">主要污染源</th>
-                  <th className="px-4 py-3 text-left font-semibold text-gray-900">变化趋势</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-900">事件名称</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-900">类型</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-900">严重程度</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-900">日期</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-900">状态</th>
+                  <th className="px-4 py-3 text-left font-semibold text-gray-900">操作</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
-                <tr>
-                  <td className="px-4 py-3 font-medium text-gray-900">太平洋</td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-red-100 text-red-800 rounded-full text-xs">严重</span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">塑料垃圾、化学污染</td>
-                  <td className="px-4 py-3 text-red-600">↑ 12.5%</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 font-medium text-gray-900">大西洋</td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">中度</span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">石油泄漏、工业排放</td>
-                  <td className="px-4 py-3 text-orange-600">↑ 8.2%</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 font-medium text-gray-900">印度洋</td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-yellow-100 text-yellow-800 rounded-full text-xs">中度</span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">农业径流、塑料污染</td>
-                  <td className="px-4 py-3 text-yellow-600">↑ 6.8%</td>
-                </tr>
-                <tr>
-                  <td className="px-4 py-3 font-medium text-gray-900">北极洋</td>
-                  <td className="px-4 py-3">
-                    <span className="px-2 py-1 bg-green-100 text-green-800 rounded-full text-xs">轻度</span>
-                  </td>
-                  <td className="px-4 py-3 text-gray-600">微塑料、气候变化</td>
-                  <td className="px-4 py-3 text-green-600">↓ 2.1%</td>
-                </tr>
+                {getFilteredEvents().slice(0, 10).map((event) => (
+                  <tr key={event.id} className="hover:bg-gray-50">
+                    <td className="px-4 py-3 font-medium text-gray-900">{event.name}</td>
+                    <td className="px-4 py-3">
+                      <span className="px-2 py-1 rounded-full text-xs text-white"
+                            style={{ backgroundColor: pollutionTypeColors[event.type as keyof typeof pollutionTypeColors] }}>
+                        {pollutionTypeLabels[event.type as keyof typeof pollutionTypeLabels]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs text-white`}
+                            style={{ backgroundColor: getSeverityColor(event.severity) }}>
+                        {severityLabels[event.severity as keyof typeof severityLabels]}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3 text-gray-600">
+                      {new Date(event.date).toLocaleDateString('zh-CN')}
+                    </td>
+                    <td className="px-4 py-3">
+                      <span className={`px-2 py-1 rounded-full text-xs ${
+                        event.status === 'ongoing' ? 'bg-red-100 text-red-800' :
+                        event.status === 'resolved' ? 'bg-green-100 text-green-800' :
+                        'bg-yellow-100 text-yellow-800'
+                      }`}>
+                        {event.status === 'ongoing' ? '持续中' :
+                         event.status === 'resolved' ? '已解决' : '部分解决'}
+                      </span>
+                    </td>
+                    <td className="px-4 py-3">
+                      <button
+                        onClick={() => setSelectedEvent(event)}
+                        className="text-ocean-600 hover:text-ocean-800 text-xs font-medium"
+                      >
+                        查看详情
+                      </button>
+                    </td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
+          
+          {getFilteredEvents().length > 10 && (
+            <div className="mt-4 text-center">
+              <span className="text-sm text-gray-500">
+                显示前10个事件，共 {getFilteredEvents().length} 个事件
+              </span>
+            </div>
+          )}
         </motion.div>
       </div>
     </div>

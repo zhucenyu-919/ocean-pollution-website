@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Waves, Menu, X, Home, Brain, BarChart3, Play, Atom, Users } from 'lucide-react';
+import { Waves, Menu, X, Home, Brain, BarChart3, Play, Atom, Users, Database } from 'lucide-react';
 
 const navigationItems = [
   { path: '/', label: '首页', icon: Home },
   { path: '/deep-thinking', label: '深度思考', icon: Brain },
   { path: '/statistics', label: '统计图鉴', icon: BarChart3 },
+  { path: '/data-showcase', label: '数据库', icon: Database },
   { path: '/interactive-learning', label: '交互学习', icon: Play },
   { path: '/animations', label: '模式动画', icon: Atom },
   { path: '/experts', label: '专家资源', icon: Users },
