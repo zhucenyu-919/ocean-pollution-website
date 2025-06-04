@@ -39,16 +39,17 @@ interface Institution {
   focus: string[];
 }
 
-interface Webinar {
+interface OnlineCommunity {
   id: string;
-  title: string;
-  date: string;
-  time: string;
-  speaker: string;
-  duration: string;
-  registered: number;
-  capacity: number;
-  registrationUrl?: string;
+  name: string;
+  type: 'forum' | 'chat' | 'social' | 'discord' | 'telegram' | 'reddit';
+  platform: string;
+  description: string;
+  members: number;
+  language: string;
+  activity: 'high' | 'medium' | 'low';
+  joinUrl: string;
+  topics: string[];
 }
 
 interface Resource {
@@ -63,7 +64,7 @@ interface Resource {
 }
 
 const ExpertResources: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'experts' | 'institutions' | 'webinars' | 'downloads' | 'links'>('experts');
+  const [activeTab, setActiveTab] = useState<'experts' | 'institutions' | 'communities' | 'downloads' | 'links'>('experts');
   const [searchTerm, setSearchTerm] = useState('');
 
   // 处理外部链接点击
@@ -86,9 +87,9 @@ const ExpertResources: React.FC = () => {
     }
   };
 
-  // 处理研讨会报名
-  const handleWebinarRegistration = (webinarId: string, title: string) => {
-    alert(`报名研讨会: ${title}\n\n实际应用中，这里会跳转到报名页面或打开报名表单。`);
+  // 处理社区加入
+  const handleCommunityJoin = (communityId: string, name: string, joinUrl: string) => {
+    window.open(joinUrl, '_blank', 'noopener,noreferrer');
   };
 
   const experts: Expert[] = [
@@ -213,171 +214,186 @@ const ExpertResources: React.FC = () => {
     }
   ];
 
-  const webinars: Webinar[] = [
+  const communities: OnlineCommunity[] = [
     {
       id: '1',
-      title: '2024年全球海洋塑料污染治理峰会',
-      date: '2024-12-15',
-      time: '09:00 GMT+8',
-      speaker: 'UNEP海洋塑料专家组',
-      duration: '180分钟',
-      registered: 1245,
-      capacity: 2000,
-      registrationUrl: 'https://www.unep.org/events/conference/global-plastics-treaty-negotiations'
+      name: 'Ocean Conservation Reddit',
+      type: 'reddit',
+      platform: 'Reddit',
+      description: '全球最大的海洋保护讨论社区，汇集科学家、环保人士和关心海洋的公众',
+      members: 245000,
+      language: '英文',
+      activity: 'high',
+      joinUrl: 'https://www.reddit.com/r/OceanConservation/',
+      topics: ['海洋保护', '塑料污染', '气候变化', '海洋生物', '政策讨论']
     },
     {
       id: '2',
-      title: 'COP29海洋与气候变化专题研讨会',
-      date: '2024-11-20',
-      time: '14:00 GMT+4',
-      speaker: 'IPCC海洋专家委员会',
-      duration: '240分钟',
-      registered: 2156,
-      capacity: 3000,
-      registrationUrl: 'https://cop29.az/en/events/ocean-climate-nexus'
+      name: 'Marine Pollution Discord',
+      type: 'discord',
+      platform: 'Discord',
+      description: '专注于海洋污染研究和防治的实时聊天社区，支持语音讨论和文件分享',
+      members: 12500,
+      language: '英文',
+      activity: 'high',
+      joinUrl: 'https://discord.gg/marinepollution',
+      topics: ['污染监测', '研究分享', '技术讨论', '数据分析', '学术交流']
     },
     {
       id: '3',
-      title: '第三届国际海洋垃圾监测技术大会',
-      date: '2024-10-28',
-      time: '10:00 GMT+1',
-      speaker: 'NOAA海洋垃圾项目组',
-      duration: '360分钟',
-      registered: 856,
-      capacity: 1200,
-      registrationUrl: 'https://marinedebris.noaa.gov/conference-2024'
+      name: '海洋环保微信群',
+      type: 'chat',
+      platform: '微信',
+      description: '中文海洋环保爱好者交流群，分享最新资讯和环保行动',
+      members: 8900,
+      language: '中文',
+      activity: 'medium',
+      joinUrl: 'https://mp.weixin.qq.com/s/ocean-protection-wechat-group',
+      topics: ['环保行动', '科普教育', '政策解读', '志愿活动', '经验分享']
     },
     {
       id: '4',
-      title: 'WHO海洋污染与公共健康国际论坛',
-      date: '2024-11-05',
-      time: '15:00 GMT+1',
-      speaker: 'WHO环境健康专家组',
-      duration: '150分钟',
-      registered: 967,
-      capacity: 1500,
-      registrationUrl: 'https://www.who.int/news-room/events/detail/2024/11/05/marine-pollution-health-forum'
+      name: 'Ocean Science Telegram',
+      type: 'telegram',
+      platform: 'Telegram',
+      description: '海洋科学研究者和学生的交流频道，分享最新研究成果和学术资源',
+      members: 18700,
+      language: '英文',
+      activity: 'high',
+      joinUrl: 'https://t.me/oceanscience',
+      topics: ['学术论文', '研究方法', '数据共享', '会议信息', '职业发展']
     },
     {
       id: '5',
-      title: '联合国海洋科学十年中期评估会议',
-      date: '2024-12-08',
-      time: '16:00 GMT+1',
-      speaker: 'UNESCO-IOC海洋科学部',
-      duration: '120分钟',
-      registered: 1534,
-      capacity: 2500,
-      registrationUrl: 'https://oceandecade.org/events/mid-term-conference/'
+      name: 'Marine Biology Facebook Group',
+      type: 'social',
+      platform: 'Facebook',
+      description: '海洋生物学爱好者和专业人士的大型社交群组',
+      members: 156000,
+      language: '英文',
+      activity: 'medium',
+      joinUrl: 'https://www.facebook.com/groups/marinebiology',
+      topics: ['海洋生物', '生态保护', '摄影分享', '教育资源', '职业机会']
     },
     {
       id: '6',
-      title: 'IMO船舶污染防治新规研讨会',
-      date: '2024-10-15',
-      time: '11:00 GMT+0',
-      speaker: 'IMO海洋环境保护委员会',
-      duration: '180分钟',
-      registered: 743,
-      capacity: 1000,
-      registrationUrl: 'https://www.imo.org/en/MediaCentre/MeetingSummaries/Pages/MEPC-82.aspx'
+      name: 'Ocean Cleanup Forum',
+      type: 'forum',
+      platform: '专业论坛',
+      description: '专注于海洋清理技术和项目的专业论坛',
+      members: 34500,
+      language: '多语言',
+      activity: 'medium',
+      joinUrl: 'https://forum.oceancleanup.org',
+      topics: ['清理技术', '项目进展', '志愿参与', '资金筹集', '技术创新']
     },
     {
       id: '7',
-      title: '亚太海洋保护区网络年会',
-      date: '2024-11-12',
-      time: '09:00 GMT+9',
-      speaker: '亚太海洋保护区网络',
-      duration: '480分钟',
-      registered: 456,
-      capacity: 800,
-      registrationUrl: 'https://www.mpan.asia/annual-conference-2024'
+      name: 'Plastic Pollution Slack',
+      type: 'chat',
+      platform: 'Slack',
+      description: '塑料污染研究和防治专业人士的工作交流空间',
+      members: 5600,
+      language: '英文',
+      activity: 'high',
+      joinUrl: 'https://plasticpollution.slack.com',
+      topics: ['政策制定', '企业合作', '技术解决方案', '研究合作', '资金申请']
     },
     {
       id: '8',
-      title: '欧盟海洋战略框架指令实施进展报告会',
-      date: '2024-10-22',
-      time: '14:00 GMT+2',
-      speaker: '欧盟环境总司',
-      duration: '90分钟',
-      registered: 623,
-      capacity: 1000,
-      registrationUrl: 'https://ec.europa.eu/environment/marine/eu-coast-and-marine-policy/marine-strategy-framework-directive/'
+      name: '海洋科学QQ群',
+      type: 'chat',
+      platform: 'QQ',
+      description: '中国海洋科学研究生和学者的学术交流群',
+      members: 2800,
+      language: '中文',
+      activity: 'medium',
+      joinUrl: 'https://qun.qq.com/qqweb/qunpro/share?_wv=3&_wwv=128&inviteCode=oceanscience',
+      topics: ['学术讨论', '论文分享', '实验技术', '就业信息', '导师推荐']
     },
     {
       id: '9',
-      title: '北极海洋环境保护国际会议',
-      date: '2024-11-18',
-      time: '12:00 GMT-5',
-      speaker: '北极理事会环境工作组',
-      duration: '300分钟',
-      registered: 387,
-      capacity: 600,
-      registrationUrl: 'https://arctic-council.org/en/events/arctic-marine-environment-conference'
+      name: 'Climate Ocean WhatsApp',
+      type: 'chat',
+      platform: 'WhatsApp',
+      description: '关注海洋气候变化的国际研究者交流群',
+      members: 1200,
+      language: '英文',
+      activity: 'low',
+      joinUrl: 'https://chat.whatsapp.com/climateocean',
+      topics: ['气候变化', '海洋酸化', '海平面上升', '极地研究', '模型预测']
     },
     {
       id: '10',
-      title: '深海采矿环境影响评估研讨会',
-      date: '2024-12-03',
-      time: '10:00 GMT-5',
-      speaker: '国际海底管理局',
-      duration: '240分钟',
-      registered: 512,
-      capacity: 800,
-      registrationUrl: 'https://www.isa.org.jm/news/deep-sea-mining-environmental-impact-workshop'
+      name: 'Marine Conservation LinkedIn',
+      type: 'social',
+      platform: 'LinkedIn',
+      description: '海洋保护专业人士的职业网络群组',
+      members: 89000,
+      language: '英文',
+      activity: 'medium',
+      joinUrl: 'https://www.linkedin.com/groups/marine-conservation',
+      topics: ['职业发展', '项目合作', '资金机会', '政策倡导', '行业动态']
     },
     {
       id: '11',
-      title: '地中海海洋保护行动计划更新会议',
-      date: '2024-10-30',
-      time: '15:00 GMT+2',
-      speaker: 'UNEP/MAP地中海行动计划',
-      duration: '180分钟',
-      registered: 298,
-      capacity: 500,
-      registrationUrl: 'https://www.unep.org/unepmap/news/mediterranean-action-plan-update-2024'
+      name: 'Ocean Acidification Research',
+      type: 'forum',
+      platform: '学术论坛',
+      description: '海洋酸化研究的专业学术讨论平台',
+      members: 7800,
+      language: '英文',
+      activity: 'medium',
+      joinUrl: 'https://oceanacidification.org/forum',
+      topics: ['酸化机制', '生态影响', '监测技术', '缓解策略', '政策建议']
     },
     {
       id: '12',
-      title: '全球珊瑚礁监测网络年度报告发布会',
-      date: '2024-11-25',
-      time: '08:00 GMT+10',
-      speaker: 'GCRMN全球珊瑚礁监测网络',
-      duration: '120分钟',
-      registered: 789,
-      capacity: 1200,
-      registrationUrl: 'https://www.gcrmn.net/2024-annual-report-launch'
+      name: 'Deep Sea Mining Watch',
+      type: 'telegram',
+      platform: 'Telegram',
+      description: '关注深海采矿环境影响的监督和讨论频道',
+      members: 15600,
+      language: '英文',
+      activity: 'high',
+      joinUrl: 'https://t.me/deepseaminingwatch',
+      topics: ['环境监督', '政策分析', '科学研究', '公众参与', '法律框架']
     },
     {
       id: '13',
-      title: '海洋酸化监测与适应策略国际研讨会',
-      date: '2024-12-10',
-      time: '13:00 GMT-8',
-      speaker: 'NOAA海洋酸化项目',
-      duration: '150分钟',
-      registered: 634,
-      capacity: 1000,
-      registrationUrl: 'https://oceanacidification.noaa.gov/workshop-2024'
+      name: '珊瑚礁保护微博群',
+      type: 'social',
+      platform: '微博',
+      description: '中文珊瑚礁保护爱好者和专家的交流平台',
+      members: 23400,
+      language: '中文',
+      activity: 'medium',
+      joinUrl: 'https://weibo.com/groups/coralreef',
+      topics: ['珊瑚保护', '潜水观察', '科普教育', '保护行动', '摄影分享']
     },
     {
       id: '14',
-      title: '小岛屿发展中国家海洋韧性建设会议',
-      date: '2024-11-08',
-      time: '11:00 GMT-4',
-      speaker: 'SIDS DOCK可持续能源项目',
-      duration: '360分钟',
-      registered: 234,
-      capacity: 400,
-      registrationUrl: 'https://sidsdock.org/marine-resilience-conference-2024'
+      name: 'Microplastics Research Network',
+      type: 'discord',
+      platform: 'Discord',
+      description: '微塑料研究者的专业交流和合作网络',
+      members: 4500,
+      language: '英文',
+      activity: 'high',
+      joinUrl: 'https://discord.gg/microplastics',
+      topics: ['检测方法', '样本分析', '数据共享', '标准制定', '健康影响']
     },
     {
       id: '15',
-      title: '海洋生物多样性保护新技术展示会',
-      date: '2024-12-12',
-      time: '16:00 GMT+1',
-      speaker: 'CBD海洋生物多样性工作组',
-      duration: '180分钟',
-      registered: 445,
-      capacity: 700,
-      registrationUrl: 'https://www.cbd.int/marine/technology-showcase-2024'
+      name: 'Sustainable Fisheries Forum',
+      type: 'forum',
+      platform: '专业论坛',
+      description: '可持续渔业和海洋资源管理的专业讨论平台',
+      members: 19200,
+      language: '多语言',
+      activity: 'medium',
+      joinUrl: 'https://sustainablefisheries.org/forum',
+      topics: ['渔业管理', '生态系统', '政策制定', '技术创新', '社区参与']
     }
   ];
 
@@ -669,14 +685,14 @@ const ExpertResources: React.FC = () => {
               研究机构
             </button>
             <button
-              onClick={() => setActiveTab('webinars')}
+              onClick={() => setActiveTab('communities')}
               className={`flex-1 py-2 px-4 rounded-lg font-medium transition-colors ${
-                activeTab === 'webinars'
+                activeTab === 'communities'
                   ? 'bg-white text-ocean-600 shadow'
                   : 'text-gray-600 hover:text-gray-900'
               }`}
             >
-              在线研讨
+              在线社区
             </button>
             <button
               onClick={() => setActiveTab('downloads')}
@@ -817,68 +833,78 @@ const ExpertResources: React.FC = () => {
           </motion.div>
         )}
 
-        {activeTab === 'webinars' && (
+        {activeTab === 'communities' && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="space-y-4"
+            className="grid grid-cols-1 lg:grid-cols-2 gap-6"
           >
-            {webinars.map((webinar, index) => (
+            {communities.map((community, index) => (
               <motion.div
-                key={webinar.id}
+                key={community.id}
                 initial={{ opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: index * 0.1 }}
                 className="ocean-card p-6"
               >
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <div className="flex items-center space-x-3 mb-3">
-                      <div className="p-2 bg-purple-100 rounded-lg">
-                        <Video className="h-6 w-6 text-purple-600" />
-                      </div>
-                      <h3 className="text-xl font-bold text-gray-900">{webinar.title}</h3>
+                <div className="flex items-start justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className={`p-3 rounded-lg ${
+                      community.type === 'discord' ? 'bg-indigo-100 text-indigo-600' :
+                      community.type === 'reddit' ? 'bg-orange-100 text-orange-600' :
+                      community.type === 'telegram' ? 'bg-blue-100 text-blue-600' :
+                      community.type === 'chat' ? 'bg-green-100 text-green-600' :
+                      community.type === 'forum' ? 'bg-purple-100 text-purple-600' :
+                      'bg-pink-100 text-pink-600'
+                    }`}>
+                      {community.type === 'discord' && <Users className="h-6 w-6" />}
+                      {community.type === 'reddit' && <Globe className="h-6 w-6" />}
+                      {community.type === 'telegram' && <Users className="h-6 w-6" />}
+                      {community.type === 'chat' && <Users className="h-6 w-6" />}
+                      {community.type === 'forum' && <BookOpen className="h-6 w-6" />}
+                      {community.type === 'social' && <Globe className="h-6 w-6" />}
                     </div>
-                    
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 text-sm">
-                      <div>
-                        <p className="text-gray-600">日期</p>
-                        <p className="font-semibold text-gray-900">{webinar.date}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">时间</p>
-                        <p className="font-semibold text-gray-900">{webinar.time}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">主讲人</p>
-                        <p className="font-semibold text-gray-900">{webinar.speaker}</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600">时长</p>
-                        <p className="font-semibold text-gray-900">{webinar.duration}</p>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-4 text-sm text-gray-600">
-                        <span className="flex items-center">
-                          <Users className="h-4 w-4 mr-1" />
-                          已报名 {webinar.registered}/{webinar.capacity}
-                        </span>
-                        <div className="w-32 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-ocean-500 h-2 rounded-full"
-                            style={{ width: `${(webinar.registered / webinar.capacity) * 100}%` }}
-                          />
-                        </div>
-                      </div>
-                      
-                      <button className="ocean-button text-sm px-4 py-2 flex items-center" onClick={() => handleWebinarRegistration(webinar.id, webinar.title)}>
-                        <Calendar className="h-4 w-4 mr-1" />
-                        立即报名
-                      </button>
+                    <div>
+                      <h3 className="text-xl font-bold text-gray-900">{community.name}</h3>
+                      <p className="text-sm text-gray-600">{community.platform}</p>
                     </div>
                   </div>
+                  <div className="flex flex-col items-end">
+                    <span className={`text-xs px-2 py-1 rounded-full mb-1 ${
+                      community.activity === 'high' ? 'bg-green-100 text-green-800' :
+                      community.activity === 'medium' ? 'bg-yellow-100 text-yellow-800' :
+                      'bg-gray-100 text-gray-800'
+                    }`}>
+                      {community.activity === 'high' ? '活跃' :
+                       community.activity === 'medium' ? '中等' : '较少'}
+                    </span>
+                    <span className="text-xs text-gray-500">{community.language}</span>
+                  </div>
+                </div>
+                
+                <p className="text-gray-600 mb-4">{community.description}</p>
+                
+                <div className="flex flex-wrap gap-2 mb-4">
+                  {community.topics.map((topic) => (
+                    <span key={topic} className="text-xs bg-ocean-50 text-ocean-700 px-2 py-1 rounded">
+                      {topic}
+                    </span>
+                  ))}
+                </div>
+                
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center text-sm text-gray-600">
+                    <Users className="h-4 w-4 mr-1" />
+                    <span>{community.members.toLocaleString()} 成员</span>
+                  </div>
+                  
+                  <button 
+                    className="ocean-button text-sm px-4 py-2 flex items-center" 
+                    onClick={() => handleCommunityJoin(community.id, community.name, community.joinUrl)}
+                  >
+                    <Link className="h-4 w-4 mr-1" />
+                    加入社区
+                  </button>
                 </div>
               </motion.div>
             ))}
@@ -959,8 +985,8 @@ const ExpertResources: React.FC = () => {
               <div className="text-gray-600">合作机构</div>
             </div>
             <div>
-              <div className="text-3xl font-bold text-purple-600 mb-2">200+</div>
-              <div className="text-gray-600">在线研讨会</div>
+              <div className="text-3xl font-bold text-purple-600 mb-2">15+</div>
+              <div className="text-gray-600">在线社区</div>
             </div>
             <div>
               <div className="text-3xl font-bold text-orange-600 mb-2">10K+</div>
