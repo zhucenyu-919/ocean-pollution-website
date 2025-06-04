@@ -8,7 +8,12 @@ import {
   ChevronRight, 
   Clock,
   Users,
-  TrendingUp
+  TrendingUp,
+  X,
+  CheckCircle,
+  AlertCircle,
+  FileText,
+  Video
 } from 'lucide-react';
 
 interface ThinkingModule {
@@ -19,10 +24,119 @@ interface ThinkingModule {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   topics: string[];
   completed: boolean;
+  content?: ModuleContent;
+}
+
+interface ModuleContent {
+  objectives: string[];
+  chapters: Chapter[];
+  caseStudies: CaseStudy[];
+  quiz: QuizQuestion[];
+}
+
+interface Chapter {
+  title: string;
+  content: string;
+  videoUrl?: string;
+  readingTime: string;
+}
+
+interface CaseStudy {
+  title: string;
+  location: string;
+  summary: string;
+  impact: string;
+  solution: string;
+}
+
+interface QuizQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number;
+  explanation: string;
 }
 
 const DeepThinking: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
+  const [activeModuleContent, setActiveModuleContent] = useState<ThinkingModule | null>(null);
+  const [currentQuizIndex, setCurrentQuizIndex] = useState(0);
+  const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
+  const [showQuizResults, setShowQuizResults] = useState(false);
+
+  const modulesContent: Record<string, ModuleContent> = {
+    'plastic-pollution': {
+      objectives: [
+        '理解塑料污染的形成机制和传播路径',
+        '掌握微塑料对海洋生态系统的影响',
+        '了解塑料污染对人类健康的潜在威胁',
+        '学习减少塑料污染的实用策略'
+      ],
+      chapters: [
+        {
+          title: '第一章：塑料污染的起源',
+          content: '每年约有800万吨塑料垃圾进入海洋，相当于每分钟倾倒一卡车的塑料。这些塑料来自陆地活动、海上运输、渔业等多个源头。塑料的持久性使其在海洋中可存在数百年...',
+          videoUrl: 'https://example.com/plastic-origin',
+          readingTime: '15分钟'
+        },
+        {
+          title: '第二章：微塑料的形成与扩散',
+          content: '大型塑料垃圾在紫外线、海浪和微生物作用下逐渐分解成微塑料（直径小于5毫米）。这些微塑料通过洋流在全球海洋中扩散，从北极到南极，从海面到深海...',
+          readingTime: '12分钟'
+        },
+        {
+          title: '第三章：生态系统影响',
+          content: '海洋生物误食塑料垃圾，导致消化系统堵塞、营养不良甚至死亡。微塑料进入食物链，通过生物富集作用在顶级捕食者体内累积...',
+          readingTime: '18分钟'
+        }
+      ],
+      caseStudies: [
+        {
+          title: '太平洋垃圾带',
+          location: '北太平洋',
+          summary: '太平洋垃圾带是世界上最大的海洋塑料聚集区，面积相当于三个法国。',
+          impact: '影响超过600种海洋生物，每年导致10万只海洋哺乳动物死亡。',
+          solution: 'The Ocean Cleanup项目正在开发创新技术清理海洋塑料。'
+        },
+        {
+          title: '亨德森岛塑料危机',
+          location: '南太平洋',
+          summary: '这个无人居住的岛屿每平方米有671件塑料垃圾，是世界上塑料污染密度最高的地方。',
+          impact: '严重威胁当地特有物种的生存，破坏原始生态系统。',
+          solution: '国际合作清理行动和源头减塑措施。'
+        }
+      ],
+      quiz: [
+        {
+          question: '每年进入海洋的塑料垃圾约有多少？',
+          options: ['100万吨', '300万吨', '800万吨', '1500万吨'],
+          correctAnswer: 2,
+          explanation: '根据联合国环境规划署的数据，每年约有800万吨塑料垃圾进入海洋。'
+        },
+        {
+          question: '微塑料的定义是什么？',
+          options: [
+            '直径小于1毫米的塑料颗粒',
+            '直径小于5毫米的塑料颗粒',
+            '直径小于10毫米的塑料颗粒',
+            '肉眼看不见的塑料颗粒'
+          ],
+          correctAnswer: 1,
+          explanation: '微塑料是指直径小于5毫米的塑料颗粒，包括初级微塑料和次级微塑料。'
+        },
+        {
+          question: '以下哪项不是减少塑料污染的有效措施？',
+          options: [
+            '使用可重复使用的购物袋',
+            '将塑料垃圾倾倒入河流',
+            '支持循环经济',
+            '选择无包装或少包装产品'
+          ],
+          correctAnswer: 1,
+          explanation: '将垃圾倾倒入河流会加剧污染，正确的做法是妥善分类回收。'
+        }
+      ]
+    }
+  };
 
   const modules: ThinkingModule[] = [
     {
@@ -32,7 +146,8 @@ const DeepThinking: React.FC = () => {
       duration: '45分钟',
       difficulty: 'beginner',
       topics: ['微塑料', '食物链影响', '海洋生物', '人类健康'],
-      completed: true
+      completed: true,
+      content: modulesContent['plastic-pollution']
     },
     {
       id: 'chemical-contamination',
@@ -97,6 +212,38 @@ const DeepThinking: React.FC = () => {
       case 'advanced': return '高级';
       default: return '未知';
     }
+  };
+
+  const handleStartLearning = (module: ThinkingModule) => {
+    if (module.content) {
+      setActiveModuleContent(module);
+      setCurrentQuizIndex(0);
+      setQuizAnswers([]);
+      setShowQuizResults(false);
+    }
+  };
+
+  const handleQuizAnswer = (answerIndex: number) => {
+    const newAnswers = [...quizAnswers];
+    newAnswers[currentQuizIndex] = answerIndex;
+    setQuizAnswers(newAnswers);
+
+    if (currentQuizIndex < (activeModuleContent?.content?.quiz.length || 0) - 1) {
+      setCurrentQuizIndex(currentQuizIndex + 1);
+    } else {
+      setShowQuizResults(true);
+    }
+  };
+
+  const calculateQuizScore = () => {
+    if (!activeModuleContent?.content?.quiz) return 0;
+    let correct = 0;
+    activeModuleContent.content.quiz.forEach((question, index) => {
+      if (quizAnswers[index] === question.correctAnswer) {
+        correct++;
+      }
+    });
+    return Math.round((correct / activeModuleContent.content.quiz.length) * 100);
   };
 
   return (
@@ -237,7 +384,10 @@ const DeepThinking: React.FC = () => {
                   </div>
                   
                   <div className="flex space-x-3">
-                    <button className="ocean-button text-sm px-4 py-2">
+                    <button 
+                      onClick={() => handleStartLearning(module)}
+                      className="ocean-button text-sm px-4 py-2"
+                    >
                       {module.completed ? '重新学习' : '开始学习'}
                     </button>
                     <button className="ocean-button-secondary text-sm px-4 py-2">
@@ -294,6 +444,119 @@ const DeepThinking: React.FC = () => {
           </div>
         </motion.div>
       </div>
+
+      {/* Learning Content Modal */}
+      {activeModuleContent && (
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4"
+          onClick={() => setActiveModuleContent(null)}
+        >
+          <motion.div
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={(e) => e.stopPropagation()}
+            className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-hidden"
+          >
+            <div className="bg-gradient-to-r from-ocean-600 to-ocean-700 text-white p-6 flex justify-between items-center">
+              <h2 className="text-2xl font-bold">{activeModuleContent.title}</h2>
+              <button
+                onClick={() => setActiveModuleContent(null)}
+                className="p-2 hover:bg-white/20 rounded-lg transition-colors"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+
+            <div className="overflow-y-auto max-h-[calc(90vh-88px)]">
+              {/* Tab Navigation */}
+              <div className="border-b border-gray-200 px-6">
+                <nav className="flex space-x-8">
+                  <button className="py-4 px-1 border-b-2 border-ocean-600 text-ocean-600 font-medium">
+                    学习目标
+                  </button>
+                  <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                    章节内容
+                  </button>
+                  <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                    案例分析
+                  </button>
+                  <button className="py-4 px-1 border-b-2 border-transparent text-gray-500 hover:text-gray-700">
+                    小测验
+                  </button>
+                </nav>
+              </div>
+
+              {/* Learning Objectives */}
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-900 mb-4 flex items-center">
+                  <Target className="h-6 w-6 mr-2 text-ocean-600" />
+                  学习目标
+                </h3>
+                <div className="space-y-3">
+                  {activeModuleContent.content?.objectives.map((objective, index) => (
+                    <div key={index} className="flex items-start space-x-3">
+                      <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
+                      <p className="text-gray-700">{objective}</p>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Chapters Preview */}
+                <h3 className="text-xl font-bold text-gray-900 mt-8 mb-4 flex items-center">
+                  <BookOpen className="h-6 w-6 mr-2 text-ocean-600" />
+                  章节概览
+                </h3>
+                <div className="space-y-4">
+                  {activeModuleContent.content?.chapters.map((chapter, index) => (
+                    <div key={index} className="ocean-card p-4">
+                      <div className="flex justify-between items-start mb-2">
+                        <h4 className="font-semibold text-gray-900">{chapter.title}</h4>
+                        <span className="text-sm text-gray-500 flex items-center">
+                          <Clock className="h-4 w-4 mr-1" />
+                          {chapter.readingTime}
+                        </span>
+                      </div>
+                      <p className="text-gray-600 text-sm mb-3">{chapter.content.substring(0, 100)}...</p>
+                      {chapter.videoUrl && (
+                        <button className="text-ocean-600 text-sm flex items-center hover:text-ocean-700">
+                          <Video className="h-4 w-4 mr-1" />
+                          观看视频
+                        </button>
+                      )}
+                    </div>
+                  ))}
+                </div>
+
+                {/* Quiz Section */}
+                {showQuizResults && (
+                  <div className="mt-8 ocean-card p-6 text-center">
+                    <h3 className="text-2xl font-bold text-gray-900 mb-4">测验完成！</h3>
+                    <div className="text-5xl font-bold text-ocean-600 mb-2">
+                      {calculateQuizScore()}%
+                    </div>
+                    <p className="text-gray-600 mb-6">
+                      你答对了 {activeModuleContent.content?.quiz.length || 0} 道题中的{' '}
+                      {activeModuleContent.content?.quiz.filter((q, i) => quizAnswers[i] === q.correctAnswer).length} 道
+                    </p>
+                    <button
+                      onClick={() => {
+                        setCurrentQuizIndex(0);
+                        setQuizAnswers([]);
+                        setShowQuizResults(false);
+                      }}
+                      className="ocean-button"
+                    >
+                      重新测验
+                    </button>
+                  </div>
+                )}
+              </div>
+            </div>
+          </motion.div>
+        </motion.div>
+      )}
     </div>
   );
 };

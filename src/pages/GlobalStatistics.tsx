@@ -1,10 +1,149 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { BarChart3, TrendingUp, Globe, Filter, Download, MapPin } from 'lucide-react';
+import { 
+  BarChart, 
+  Bar, 
+  LineChart, 
+  Line, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
+import { MapContainer, TileLayer, CircleMarker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+
+interface PollutionData {
+  id: string;
+  name: string;
+  value: number;
+  percentage?: number;
+  color?: string;
+}
+
+interface PollutionEvent {
+  id: string;
+  lat: number;
+  lng: number;
+  type: string;
+  severity: 'low' | 'medium' | 'high' | 'critical';
+  location: string;
+  description: string;
+  date: string;
+}
 
 const GlobalStatistics: React.FC = () => {
   const [selectedRegion, setSelectedRegion] = useState<string>('global');
   const [selectedType, setSelectedType] = useState<string>('all');
+
+  // 污染类型数据
+  const pollutionTypeData: PollutionData[] = [
+    { id: 'plastic', name: '塑料污染', value: 42, color: '#3B82F6' },
+    { id: 'chemical', name: '化学污染', value: 28, color: '#10B981' },
+    { id: 'oil', name: '石油污染', value: 18, color: '#F59E0B' },
+    { id: 'noise', name: '噪声污染', value: 8, color: '#8B5CF6' },
+    { id: 'other', name: '其他', value: 4, color: '#6B7280' }
+  ];
+
+  // 历史趋势数据
+  const trendData = [
+    { year: '2020', plastic: 35, chemical: 25, oil: 20, total: 80 },
+    { year: '2021', plastic: 38, chemical: 26, oil: 18, total: 82 },
+    { year: '2022', plastic: 40, chemical: 27, oil: 19, total: 86 },
+    { year: '2023', plastic: 41, chemical: 28, oil: 18, total: 87 },
+    { year: '2024', plastic: 42, chemical: 28, oil: 18, total: 88 }
+  ];
+
+  // 全球污染事件数据
+  const pollutionEvents: PollutionEvent[] = [
+    {
+      id: '1',
+      lat: 20.5,
+      lng: -157.5,
+      type: 'plastic',
+      severity: 'critical',
+      location: '太平洋垃圾带',
+      description: '世界最大的海洋塑料聚集区',
+      date: '2024-01'
+    },
+    {
+      id: '2',
+      lat: 35.7,
+      lng: 139.7,
+      type: 'chemical',
+      severity: 'high',
+      location: '东京湾',
+      description: '工业化学污染严重',
+      date: '2024-02'
+    },
+    {
+      id: '3',
+      lat: 51.5,
+      lng: 0.1,
+      type: 'oil',
+      severity: 'medium',
+      location: '英吉利海峡',
+      description: '船舶石油泄漏事件',
+      date: '2024-01'
+    },
+    {
+      id: '4',
+      lat: -33.9,
+      lng: 18.4,
+      type: 'plastic',
+      severity: 'high',
+      location: '开普敦',
+      description: '海岸塑料垃圾堆积',
+      date: '2024-03'
+    },
+    {
+      id: '5',
+      lat: 1.3,
+      lng: 103.8,
+      type: 'noise',
+      severity: 'medium',
+      location: '新加坡海峡',
+      description: '航运噪声污染',
+      date: '2024-02'
+    }
+  ];
+
+  const getSeverityColor = (severity: string) => {
+    switch (severity) {
+      case 'critical': return '#DC2626';
+      case 'high': return '#F59E0B';
+      case 'medium': return '#10B981';
+      case 'low': return '#3B82F6';
+      default: return '#6B7280';
+    }
+  };
+
+  const getSeverityRadius = (severity: string) => {
+    switch (severity) {
+      case 'critical': return 20;
+      case 'high': return 15;
+      case 'medium': return 10;
+      case 'low': return 5;
+      default: return 5;
+    }
+  };
+
+  // 修复 Leaflet 图标问题
+  useEffect(() => {
+    const L = require('leaflet');
+    delete (L.Icon.Default.prototype as any)._getIconUrl;
+    L.Icon.Default.mergeOptions({
+      iconRetinaUrl: require('leaflet/dist/images/marker-icon-2x.png'),
+      iconUrl: require('leaflet/dist/images/marker-icon.png'),
+      shadowUrl: require('leaflet/dist/images/marker-shadow.png'),
+    });
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 py-8">
@@ -83,14 +222,48 @@ const GlobalStatistics: React.FC = () => {
           
           {/* Map Placeholder */}
           <div className="h-96 bg-gradient-to-br from-blue-100 to-blue-200 rounded-lg flex items-center justify-center relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/20 to-green-500/20 animate-pulse"></div>
-            <div className="relative z-10 text-center">
-              <MapPin className="h-16 w-16 text-ocean-600 mx-auto mb-4" />
-              <h3 className="text-xl font-semibold text-gray-700 mb-2">交互式地图组件</h3>
-              <p className="text-gray-600">
-                这里将集成 Leaflet 地图，显示全球海洋污染事件分布
-              </p>
-            </div>
+            <MapContainer
+              center={[20, 0]}
+              zoom={2}
+              className="h-full w-full"
+              style={{ height: '100%', width: '100%' }}
+            >
+              <TileLayer
+                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              />
+              
+              {pollutionEvents
+                .filter(event => selectedType === 'all' || event.type === selectedType)
+                .map((event) => (
+                  <CircleMarker
+                    key={event.id}
+                    center={[event.lat, event.lng]}
+                    radius={getSeverityRadius(event.severity)}
+                    fillColor={getSeverityColor(event.severity)}
+                    color={getSeverityColor(event.severity)}
+                    weight={2}
+                    opacity={0.8}
+                    fillOpacity={0.6}
+                  >
+                    <Popup>
+                      <div className="p-2">
+                        <h4 className="font-bold text-gray-900">{event.location}</h4>
+                        <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                        <div className="mt-2 flex items-center justify-between">
+                          <span className="text-xs bg-gray-100 px-2 py-1 rounded">
+                            {event.type === 'plastic' && '塑料污染'}
+                            {event.type === 'chemical' && '化学污染'}
+                            {event.type === 'oil' && '石油污染'}
+                            {event.type === 'noise' && '噪声污染'}
+                          </span>
+                          <span className="text-xs text-gray-500">{event.date}</span>
+                        </div>
+                      </div>
+                    </Popup>
+                  </CircleMarker>
+                ))}
+            </MapContainer>
           </div>
           
           {/* Map Legend */}
@@ -124,30 +297,41 @@ const GlobalStatistics: React.FC = () => {
             className="ocean-card p-6"
           >
             <h3 className="text-xl font-bold text-gray-900 mb-4">污染类型分布</h3>
-            <div className="h-64 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <TrendingUp className="h-12 w-12 text-ocean-600 mx-auto mb-2" />
-                <p className="text-gray-600">饼图/柱状图组件</p>
-              </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={pollutionTypeData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={(entry) => `${entry.name}: ${entry.value}%`}
+                    outerRadius={80}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pollutionTypeData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={entry.color} />
+                    ))}
+                  </Pie>
+                  <Tooltip />
+                </PieChart>
+              </ResponsiveContainer>
             </div>
             
             <div className="mt-4 space-y-2">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">塑料污染</span>
-                <span className="text-sm font-semibold text-gray-900">42%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">化学污染</span>
-                <span className="text-sm font-semibold text-gray-900">28%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">石油污染</span>
-                <span className="text-sm font-semibold text-gray-900">18%</span>
-              </div>
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">其他</span>
-                <span className="text-sm font-semibold text-gray-900">12%</span>
-              </div>
+              {pollutionTypeData.map((item) => (
+                <div key={item.id} className="flex justify-between items-center">
+                  <div className="flex items-center">
+                    <div 
+                      className="w-3 h-3 rounded-full mr-2" 
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <span className="text-sm text-gray-600">{item.name}</span>
+                  </div>
+                  <span className="text-sm font-semibold text-gray-900">{item.value}%</span>
+                </div>
+              ))}
             </div>
           </motion.div>
 
@@ -159,16 +343,42 @@ const GlobalStatistics: React.FC = () => {
             className="ocean-card p-6"
           >
             <h3 className="text-xl font-bold text-gray-900 mb-4">历史趋势分析</h3>
-            <div className="h-64 bg-gradient-to-br from-gray-50 to-gray-100 rounded-lg flex items-center justify-center">
-              <div className="text-center">
-                <BarChart3 className="h-12 w-12 text-ocean-600 mx-auto mb-2" />
-                <p className="text-gray-600">时间序列图表组件</p>
-              </div>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={trendData}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="year" />
+                  <YAxis />
+                  <Tooltip />
+                  <Legend />
+                  <Line 
+                    type="monotone" 
+                    dataKey="plastic" 
+                    stroke="#3B82F6" 
+                    name="塑料污染"
+                    strokeWidth={2}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="chemical" 
+                    stroke="#10B981" 
+                    name="化学污染"
+                    strokeWidth={2}
+                  />
+                  <Line 
+                    type="monotone" 
+                    dataKey="oil" 
+                    stroke="#F59E0B" 
+                    name="石油污染"
+                    strokeWidth={2}
+                  />
+                </LineChart>
+              </ResponsiveContainer>
             </div>
             
             <div className="mt-4 flex justify-between items-center text-sm">
               <span className="text-gray-600">2020-2024年变化趋势</span>
-              <span className="text-red-600 font-semibold">↑ 15.3%</span>
+              <span className="text-red-600 font-semibold">↑ 10%</span>
             </div>
           </motion.div>
         </div>
