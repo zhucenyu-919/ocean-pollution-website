@@ -78,8 +78,12 @@ const ExpertResources: React.FC = () => {
 
   // 处理下载
   const handleDownload = (resourceId: string, title: string) => {
-    // 模拟下载功能
-    alert(`正在下载: ${title}\n\n实际应用中，这里会触发真实的文件下载。`);
+    const resource = resources.find(r => r.id === resourceId);
+    if (resource && resource.downloadUrl) {
+      window.open(resource.downloadUrl, '_blank', 'noopener,noreferrer');
+    } else {
+      alert(`抱歉，${title} 的下载链接暂时不可用。`);
+    }
   };
 
   // 处理研讨会报名
@@ -259,63 +263,203 @@ const ExpertResources: React.FC = () => {
   const resources: Resource[] = [
     {
       id: '1',
-      title: '2024全球海洋污染状况报告',
+      title: 'UNEP海洋塑料污染报告2023',
       type: 'report',
       format: 'PDF',
-      size: '12.5 MB',
-      downloads: 1842,
-      description: '详细分析全球海洋污染现状、趋势和应对措施',
-      downloadUrl: 'https://www.unep.org/resources/report/marine-pollution-report-2024'
+      size: '8.2 MB',
+      downloads: 2156,
+      description: '联合国环境规划署发布的全球海洋塑料污染现状报告',
+      downloadUrl: 'https://www.unep.org/resources/report/turning-tide-how-tackle-plastic-pollution'
     },
     {
       id: '2',
-      title: '海洋保护行动指南',
+      title: 'NOAA海洋垃圾监测指南',
       type: 'guide',
       format: 'PDF',
-      size: '5.8 MB',
-      downloads: 956,
-      description: '为个人和组织提供实用的海洋保护行动建议',
-      downloadUrl: 'https://www.worldwildlife.org/publications/ocean-conservation-guide'
+      size: '12.4 MB',
+      downloads: 1834,
+      description: 'NOAA发布的海洋垃圾监测和评估标准指南',
+      downloadUrl: 'https://marinedebris.noaa.gov/sites/default/files/publications-files/NOAA_Marine_Debris_Monitoring_Toolkit.pdf'
     },
     {
       id: '3',
-      title: '全球海洋塑料污染数据集',
-      type: 'dataset',
-      format: 'CSV',
-      size: '25.3 MB',
-      downloads: 634,
-      description: '包含全球海洋塑料污染监测数据的综合数据集',
-      downloadUrl: 'https://data.unep.org/datasets/marine-plastic-pollution'
+      title: 'WHO海洋污染与健康报告',
+      type: 'report',
+      format: 'PDF',
+      size: '6.8 MB',
+      downloads: 1567,
+      description: '世界卫生组织关于海洋污染对人类健康影响的综合报告',
+      downloadUrl: 'https://www.who.int/publications/i/item/9789240045064'
     },
     {
       id: '4',
-      title: '海洋污染监测工具包',
-      type: 'toolkit',
-      format: 'ZIP',
-      size: '45.2 MB',
-      downloads: 423,
-      description: '包含海洋污染监测所需的工具、方法和标准操作程序',
-      downloadUrl: 'https://www.noaa.gov/education/resource-collections/ocean-monitoring-toolkit'
+      title: 'FAO全球渔业状况报告2024',
+      type: 'report',
+      format: 'PDF',
+      size: '15.6 MB',
+      downloads: 2341,
+      description: '联合国粮农组织发布的全球渔业和水产养殖状况报告',
+      downloadUrl: 'https://www.fao.org/3/cc0461en/cc0461en.pdf'
     },
     {
       id: '5',
-      title: '海洋生物多样性保护策略',
+      title: 'IPCC海洋与冰冻圈特别报告',
       type: 'report',
       format: 'PDF',
-      size: '8.7 MB',
-      downloads: 789,
-      description: '分析海洋生物多样性现状及保护策略建议',
-      downloadUrl: 'https://www.cbd.int/doc/publications/marine-biodiversity-report.pdf'
+      size: '28.3 MB',
+      downloads: 3245,
+      description: 'IPCC关于气候变化中的海洋和冰冻圈特别报告',
+      downloadUrl: 'https://www.ipcc.ch/site/assets/uploads/sites/3/2019/12/SROCC_FullReport_FINAL.pdf'
     },
     {
       id: '6',
-      title: '可持续渔业管理手册',
+      title: 'UNESCO海洋科学十年实施计划',
       type: 'guide',
       format: 'PDF',
-      size: '15.4 MB',
-      downloads: 567,
-      description: '可持续渔业管理的最佳实践和案例研究',
-      downloadUrl: 'https://www.fao.org/publications/sustainable-fisheries-handbook'
+      size: '9.7 MB',
+      downloads: 1456,
+      description: 'UNESCO海洋科学促进可持续发展十年实施计划',
+      downloadUrl: 'https://unesdoc.unesco.org/ark:/48223/pf0000375147'
+    },
+    {
+      id: '7',
+      title: 'IMO船舶污染防治公约MARPOL',
+      type: 'guide',
+      format: 'PDF',
+      size: '18.2 MB',
+      downloads: 2789,
+      description: '国际海事组织船舶污染防治国际公约完整文本',
+      downloadUrl: 'https://www.imo.org/en/About/Conventions/Pages/International-Convention-for-the-Prevention-of-Pollution-from-Ships-(MARPOL).aspx'
+    },
+    {
+      id: '8',
+      title: 'GESAMP海洋污染评估报告',
+      type: 'report',
+      format: 'PDF',
+      size: '11.4 MB',
+      downloads: 1678,
+      description: '海洋环境保护科学专家组关于海洋污染状况的评估',
+      downloadUrl: 'https://www.gesamp.org/publications/reports-and-studies-no-103'
+    },
+    {
+      id: '9',
+      title: 'OECD海洋塑料经济学报告',
+      type: 'report',
+      format: 'PDF',
+      size: '7.9 MB',
+      downloads: 1923,
+      description: 'OECD关于海洋塑料污染经济影响和解决方案的分析',
+      downloadUrl: 'https://www.oecd.org/environment/plastics-in-the-ocean-9789264235014-en.htm'
+    },
+    {
+      id: '10',
+      title: 'WWF海洋保护区管理指南',
+      type: 'guide',
+      format: 'PDF',
+      size: '13.7 MB',
+      downloads: 1345,
+      description: '世界自然基金会海洋保护区建立和管理最佳实践指南',
+      downloadUrl: 'https://www.worldwildlife.org/publications/marine-protected-areas-management-guide'
+    },
+    {
+      id: '11',
+      title: 'IAEA海洋放射性监测手册',
+      type: 'toolkit',
+      format: 'PDF',
+      size: '22.1 MB',
+      downloads: 987,
+      description: '国际原子能机构海洋环境放射性监测技术手册',
+      downloadUrl: 'https://www.iaea.org/publications/14895/handbook-of-nuclear-chemistry'
+    },
+    {
+      id: '12',
+      title: 'UNEP全球海洋垃圾评估',
+      type: 'report',
+      format: 'PDF',
+      size: '16.8 MB',
+      downloads: 2567,
+      description: '联合国环境规划署全球海洋垃圾状况综合评估报告',
+      downloadUrl: 'https://www.unep.org/resources/report/marine-litter-global-challenge'
+    },
+    {
+      id: '13',
+      title: 'NOAA珊瑚礁保护行动计划',
+      type: 'guide',
+      format: 'PDF',
+      size: '8.5 MB',
+      downloads: 1234,
+      description: 'NOAA珊瑚礁生态系统保护和恢复行动计划',
+      downloadUrl: 'https://coralreef.noaa.gov/aboutcrcp/strategy/reprioritization/welcome.html'
+    },
+    {
+      id: '14',
+      title: 'CBD海洋生物多样性目标',
+      type: 'report',
+      format: 'PDF',
+      size: '5.3 MB',
+      downloads: 1789,
+      description: '生物多样性公约海洋和沿海生物多样性保护目标',
+      downloadUrl: 'https://www.cbd.int/doc/publications/cbd-ts-91-en.pdf'
+    },
+    {
+      id: '15',
+      title: 'OSPAR海洋环境质量状况报告',
+      type: 'report',
+      format: 'PDF',
+      size: '19.6 MB',
+      downloads: 1456,
+      description: 'OSPAR委员会东北大西洋海洋环境质量状况评估',
+      downloadUrl: 'https://www.ospar.org/work-areas/cross-cutting-issues/climate-change'
+    },
+    {
+      id: '16',
+      title: 'HELCOM波罗的海行动计划',
+      type: 'guide',
+      format: 'PDF',
+      size: '14.2 MB',
+      downloads: 876,
+      description: 'HELCOM波罗的海环境保护行动计划2021更新版',
+      downloadUrl: 'https://helcom.fi/baltic-sea-action-plan/'
+    },
+    {
+      id: '17',
+      title: 'UNEP海洋酸化影响评估',
+      type: 'report',
+      format: 'PDF',
+      size: '10.7 MB',
+      downloads: 1678,
+      description: '联合国环境规划署海洋酸化对生态系统影响评估报告',
+      downloadUrl: 'https://www.unep.org/resources/report/ocean-acidification'
+    },
+    {
+      id: '18',
+      title: 'IOC海洋观测系统指南',
+      type: 'toolkit',
+      format: 'PDF',
+      size: '25.4 MB',
+      downloads: 1123,
+      description: 'UNESCO政府间海洋学委员会全球海洋观测系统指南',
+      downloadUrl: 'https://www.ioc-unesco.org/our-work/programmes/global-ocean-observing-system'
+    },
+    {
+      id: '19',
+      title: 'CITES海洋物种贸易管制指南',
+      type: 'guide',
+      format: 'PDF',
+      size: '7.8 MB',
+      downloads: 945,
+      description: 'CITES濒危野生动植物种国际贸易公约海洋物种管制指南',
+      downloadUrl: 'https://cites.org/eng/resources/pub/index.php'
+    },
+    {
+      id: '20',
+      title: 'PAME北极海洋环境保护战略',
+      type: 'report',
+      format: 'PDF',
+      size: '12.9 MB',
+      downloads: 734,
+      description: '北极理事会海洋环境保护工作组北极海洋保护战略',
+      downloadUrl: 'https://www.pame.is/projects/arctic-marine-strategic-plan'
     }
   ];
 
