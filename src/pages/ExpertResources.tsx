@@ -46,6 +46,7 @@ interface Webinar {
   duration: string;
   registered: number;
   capacity: number;
+  registrationUrl?: string;
 }
 
 interface Resource {
@@ -56,11 +57,33 @@ interface Resource {
   size: string;
   downloads: number;
   description: string;
+  downloadUrl?: string;
 }
 
 const ExpertResources: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'experts' | 'institutions' | 'webinars' | 'downloads'>('experts');
   const [searchTerm, setSearchTerm] = useState('');
+
+  // 处理外部链接点击
+  const handleExternalLink = (url: string) => {
+    window.open(url, '_blank', 'noopener,noreferrer');
+  };
+
+  // 处理邮件链接
+  const handleEmailClick = (email: string) => {
+    window.location.href = `mailto:${email}`;
+  };
+
+  // 处理下载
+  const handleDownload = (resourceId: string, title: string) => {
+    // 模拟下载功能
+    alert(`正在下载: ${title}\n\n实际应用中，这里会触发真实的文件下载。`);
+  };
+
+  // 处理研讨会报名
+  const handleWebinarRegistration = (webinarId: string, title: string) => {
+    alert(`报名研讨会: ${title}\n\n实际应用中，这里会跳转到报名页面或打开报名表单。`);
+  };
 
   const experts: Expert[] = [
     {
@@ -70,8 +93,8 @@ const ExpertResources: React.FC = () => {
       organization: '中国科学院海洋研究所',
       specialization: ['海洋生态系统', '塑料污染', '生物多样性'],
       image: 'https://via.placeholder.com/150',
-      email: 'wang.haiyang@example.com',
-      website: 'https://example.com/wanghaiyang',
+      email: 'wang.haiyang@qdio.ac.cn',
+      website: 'http://www.qdio.ac.cn',
       bio: '专注于海洋塑料污染对生态系统影响的研究，发表论文120余篇'
     },
     {
@@ -81,7 +104,8 @@ const ExpertResources: React.FC = () => {
       organization: '世界自然基金会(WWF)',
       specialization: ['海洋保护政策', '可持续渔业', '珊瑚礁修复'],
       image: 'https://via.placeholder.com/150',
-      email: 'sarah.johnson@example.com',
+      email: 'sarah.johnson@wwf.org',
+      website: 'https://www.worldwildlife.org',
       bio: '在海洋保护领域有15年经验，领导多个国际海洋保护项目'
     },
     {
@@ -91,8 +115,8 @@ const ExpertResources: React.FC = () => {
       organization: '清华大学环境学院',
       specialization: ['海洋化学污染', '重金属检测', '污染治理技术'],
       image: 'https://via.placeholder.com/150',
-      email: 'li.ming@example.com',
-      website: 'https://example.com/liming',
+      email: 'li.ming@tsinghua.edu.cn',
+      website: 'https://www.tsinghua.edu.cn',
       bio: '环境化学领域权威专家，国家重点研发计划首席科学家'
     },
     {
@@ -102,7 +126,8 @@ const ExpertResources: React.FC = () => {
       organization: '东京大学海洋研究所',
       specialization: ['海洋生物保护', '微塑料影响', '生态毒理学'],
       image: 'https://via.placeholder.com/150',
-      email: 'tanaka@example.com',
+      email: 'tanaka@aori.u-tokyo.ac.jp',
+      website: 'https://www.aori.u-tokyo.ac.jp',
       bio: '研究微塑料对海洋生物影响的先驱，获得多项国际环保奖项'
     }
   ];
@@ -114,7 +139,7 @@ const ExpertResources: React.FC = () => {
       type: 'government',
       location: '中国·大连',
       description: '负责中国海洋环境监测、评价和保护工作的国家级机构',
-      website: 'https://example.com/nmemc',
+      website: 'http://www.nmemc.org.cn',
       focus: ['海洋监测', '污染防治', '生态评估']
     },
     {
@@ -123,7 +148,7 @@ const ExpertResources: React.FC = () => {
       type: 'ngo',
       location: '荷兰·鹿特丹',
       description: '致力于开发先进技术清理海洋塑料垃圾的非营利组织',
-      website: 'https://example.com/oceancleanup',
+      website: 'https://theoceancleanup.com',
       focus: ['技术创新', '塑料清理', '公众教育']
     },
     {
@@ -132,7 +157,7 @@ const ExpertResources: React.FC = () => {
       type: 'research',
       location: '美国·加州',
       description: '世界顶尖的海洋科学研究机构之一',
-      website: 'https://example.com/scripps',
+      website: 'https://scripps.ucsd.edu',
       focus: ['气候变化', '海洋生物', '海洋地质']
     },
     {
@@ -141,8 +166,44 @@ const ExpertResources: React.FC = () => {
       type: 'university',
       location: '全球',
       description: '汇集全球顶尖海洋大学的学术联盟',
-      website: 'https://example.com/wmu',
+      website: 'https://www.wmu.se',
       focus: ['学术交流', '人才培养', '科研合作']
+    },
+    {
+      id: '5',
+      name: '联合国环境规划署',
+      type: 'government',
+      location: '肯尼亚·内罗毕',
+      description: '联合国负责环境事务的专门机构',
+      website: 'https://www.unep.org',
+      focus: ['全球环境政策', '可持续发展', '环境监测']
+    },
+    {
+      id: '6',
+      name: '绿色和平组织',
+      type: 'ngo',
+      location: '全球',
+      description: '国际环保组织，致力于保护地球环境和促进和平',
+      website: 'https://www.greenpeace.org',
+      focus: ['环境保护', '气候行动', '海洋保护']
+    },
+    {
+      id: '7',
+      name: '伍兹霍尔海洋研究所',
+      type: 'research',
+      location: '美国·马萨诸塞州',
+      description: '世界领先的海洋科学研究机构',
+      website: 'https://www.whoi.edu',
+      focus: ['深海研究', '海洋技术', '气候科学']
+    },
+    {
+      id: '8',
+      name: '中国海洋大学',
+      type: 'university',
+      location: '中国·青岛',
+      description: '中国海洋和水产学科特色显著的教育部直属重点综合性大学',
+      website: 'http://www.ouc.edu.cn',
+      focus: ['海洋科学', '水产养殖', '海洋工程']
     }
   ];
 
@@ -155,7 +216,8 @@ const ExpertResources: React.FC = () => {
       speaker: '王海洋博士',
       duration: '90分钟',
       registered: 245,
-      capacity: 500
+      capacity: 500,
+      registrationUrl: 'https://zoom.us/webinar/register'
     },
     {
       id: '2',
@@ -165,7 +227,8 @@ const ExpertResources: React.FC = () => {
       speaker: 'Dr. Sarah Johnson',
       duration: '60分钟',
       registered: 180,
-      capacity: 300
+      capacity: 300,
+      registrationUrl: 'https://teams.microsoft.com/registration'
     },
     {
       id: '3',
@@ -175,7 +238,19 @@ const ExpertResources: React.FC = () => {
       speaker: '李明教授',
       duration: '120分钟',
       registered: 320,
-      capacity: 400
+      capacity: 400,
+      registrationUrl: 'https://webex.com/webinar/register'
+    },
+    {
+      id: '4',
+      title: '珊瑚礁生态系统保护与修复',
+      date: '2024-05-20',
+      time: '16:00 GMT+8',
+      speaker: 'Prof. Akiko Tanaka',
+      duration: '75分钟',
+      registered: 156,
+      capacity: 250,
+      registrationUrl: 'https://gotomeeting.com/register'
     }
   ];
 
@@ -187,7 +262,8 @@ const ExpertResources: React.FC = () => {
       format: 'PDF',
       size: '12.5 MB',
       downloads: 1842,
-      description: '详细分析全球海洋污染现状、趋势和应对措施'
+      description: '详细分析全球海洋污染现状、趋势和应对措施',
+      downloadUrl: 'https://www.unep.org/resources/report/marine-pollution-report-2024'
     },
     {
       id: '2',
@@ -196,25 +272,48 @@ const ExpertResources: React.FC = () => {
       format: 'PDF',
       size: '5.8 MB',
       downloads: 956,
-      description: '为个人和组织提供实用的海洋保护行动建议'
+      description: '为个人和组织提供实用的海洋保护行动建议',
+      downloadUrl: 'https://www.worldwildlife.org/publications/ocean-conservation-guide'
     },
     {
       id: '3',
-      title: '海洋污染监测数据集(2020-2024)',
+      title: '全球海洋塑料污染数据集',
       type: 'dataset',
       format: 'CSV',
-      size: '156 MB',
-      downloads: 423,
-      description: '包含全球主要海域污染监测数据'
+      size: '25.3 MB',
+      downloads: 634,
+      description: '包含全球海洋塑料污染监测数据的综合数据集',
+      downloadUrl: 'https://data.unep.org/datasets/marine-plastic-pollution'
     },
     {
       id: '4',
-      title: '海洋教育工具包',
+      title: '海洋污染监测工具包',
       type: 'toolkit',
       format: 'ZIP',
-      size: '89 MB',
-      downloads: 678,
-      description: '包含课件、活动方案和教学资源'
+      size: '45.2 MB',
+      downloads: 423,
+      description: '包含海洋污染监测所需的工具、方法和标准操作程序',
+      downloadUrl: 'https://www.noaa.gov/education/resource-collections/ocean-monitoring-toolkit'
+    },
+    {
+      id: '5',
+      title: '海洋生物多样性保护策略',
+      type: 'report',
+      format: 'PDF',
+      size: '8.7 MB',
+      downloads: 789,
+      description: '分析海洋生物多样性现状及保护策略建议',
+      downloadUrl: 'https://www.cbd.int/doc/publications/marine-biodiversity-report.pdf'
+    },
+    {
+      id: '6',
+      title: '可持续渔业管理手册',
+      type: 'guide',
+      format: 'PDF',
+      size: '15.4 MB',
+      downloads: 567,
+      description: '可持续渔业管理的最佳实践和案例研究',
+      downloadUrl: 'https://www.fao.org/publications/sustainable-fisheries-handbook'
     }
   ];
 
@@ -366,12 +465,12 @@ const ExpertResources: React.FC = () => {
                       <p className="text-sm text-gray-600 mb-4">{expert.bio}</p>
                       
                       <div className="flex space-x-2">
-                        <button className="ocean-button text-sm px-3 py-1 flex items-center">
+                        <button className="ocean-button text-sm px-3 py-1 flex items-center" onClick={() => handleEmailClick(expert.email)}>
                           <Mail className="h-4 w-4 mr-1" />
                           联系
                         </button>
                         {expert.website && (
-                          <button className="ocean-button-secondary text-sm px-3 py-1 flex items-center">
+                          <button className="ocean-button-secondary text-sm px-3 py-1 flex items-center" onClick={() => handleExternalLink(expert.website!)}>
                             <ExternalLink className="h-4 w-4 mr-1" />
                             主页
                           </button>
@@ -432,7 +531,7 @@ const ExpertResources: React.FC = () => {
                     ))}
                   </div>
                   
-                  <button className="ocean-button text-sm px-4 py-2 w-full flex items-center justify-center">
+                  <button className="ocean-button text-sm px-4 py-2 w-full flex items-center justify-center" onClick={() => handleExternalLink(institution.website)}>
                     <Globe className="h-4 w-4 mr-2" />
                     访问网站
                   </button>
@@ -497,7 +596,7 @@ const ExpertResources: React.FC = () => {
                         </div>
                       </div>
                       
-                      <button className="ocean-button text-sm px-4 py-2 flex items-center">
+                      <button className="ocean-button text-sm px-4 py-2 flex items-center" onClick={() => handleWebinarRegistration(webinar.id, webinar.title)}>
                         <Calendar className="h-4 w-4 mr-1" />
                         立即报名
                       </button>
@@ -545,7 +644,7 @@ const ExpertResources: React.FC = () => {
                       </span>
                     </div>
                     
-                    <button className="ocean-button text-sm px-4 py-2 w-full flex items-center justify-center">
+                    <button className="ocean-button text-sm px-4 py-2 w-full flex items-center justify-center" onClick={() => handleDownload(resource.id, resource.title)}>
                       <Download className="h-4 w-4 mr-2" />
                       下载资源
                     </button>
