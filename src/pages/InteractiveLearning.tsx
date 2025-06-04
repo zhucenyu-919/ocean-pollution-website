@@ -12,8 +12,12 @@ import {
   Users,
   CheckCircle,
   AlertCircle,
-  Zap
+  Zap,
+  Lock,
+  Star,
+  TrendingUp
 } from 'lucide-react';
+import InteractiveLearningModule from '../components/InteractiveLearningModule';
 
 interface LearningModule {
   id: string;
@@ -38,74 +42,77 @@ interface Achievement {
 
 const InteractiveLearning: React.FC = () => {
   const [selectedModule, setSelectedModule] = useState<string | null>(null);
-  const [score, setScore] = useState(0);
+  const [activeModule, setActiveModule] = useState<string | null>(null);
+  const [totalScore, setTotalScore] = useState(1250);
+  const [completedModules, setCompletedModules] = useState<string[]>(['ocean-explorer']);
+  const [userLevel, setUserLevel] = useState(3);
 
   const learningModules: LearningModule[] = [
     {
       id: 'ocean-explorer',
       title: '虚拟海洋探索',
-      description: '潜入3D虚拟海洋环境，亲眼见证污染对海洋生态的影响',
+      description: '深入不同海洋深度，观察污染对生态系统的真实影响，学习海洋分层结构',
       icon: <Waves className="h-8 w-8" />,
       difficulty: 'easy',
-      duration: '20分钟',
+      duration: '25分钟',
       type: 'vr',
-      progress: 100,
+      progress: completedModules.includes('ocean-explorer') ? 100 : 0,
       locked: false
     },
     {
       id: 'cleanup-mission',
       title: '海洋清理任务',
-      description: '操控清理船只，学习不同污染物的清理方法和技术',
+      description: '指挥清理舰队，学习不同污染类型的清理策略和技术，体验真实清理挑战',
       icon: <Gamepad2 className="h-8 w-8" />,
       difficulty: 'medium',
-      duration: '30分钟',
+      duration: '35分钟',
       type: 'game',
-      progress: 75,
-      locked: false
+      progress: completedModules.includes('cleanup-mission') ? 100 : 0,
+      locked: !completedModules.includes('ocean-explorer')
     },
     {
       id: 'pollution-lab',
       title: '污染实验室',
-      description: '通过虚拟实验了解污染物在海水中的扩散和降解过程',
+      description: '进行虚拟实验，研究污染物扩散机制、生物富集过程和毒性评估',
       icon: <Beaker className="h-8 w-8" />,
       difficulty: 'hard',
       duration: '45分钟',
       type: 'simulation',
-      progress: 50,
-      locked: false
+      progress: completedModules.includes('pollution-lab') ? 100 : 0,
+      locked: !completedModules.includes('cleanup-mission')
     },
     {
       id: 'ecosystem-quiz',
-      title: '生态系统测验',
-      description: '测试你对海洋生态系统和污染影响的理解程度',
+      title: '生态系统知识测验',
+      description: '全面测试海洋生态学知识，包括食物链、生物多样性和环境影响',
       icon: <Target className="h-8 w-8" />,
       difficulty: 'medium',
-      duration: '15分钟',
+      duration: '20分钟',
       type: 'quiz',
-      progress: 30,
-      locked: false
+      progress: completedModules.includes('ecosystem-quiz') ? 100 : 0,
+      locked: !completedModules.includes('pollution-lab')
     },
     {
       id: 'coral-restoration',
-      title: '珊瑚礁修复',
-      description: '学习珊瑚礁生态系统，体验珊瑚修复的过程和挑战',
+      title: '珊瑚礁修复模拟',
+      description: '体验珊瑚礁生态系统修复过程，学习白化治理和生态重建技术',
       icon: <Zap className="h-8 w-8" />,
       difficulty: 'hard',
       duration: '40分钟',
       type: 'simulation',
-      progress: 0,
-      locked: true
+      progress: completedModules.includes('coral-restoration') ? 100 : 0,
+      locked: !completedModules.includes('ecosystem-quiz')
     },
     {
       id: 'marine-rescue',
       title: '海洋生物救援',
-      description: '救助受污染影响的海洋生物，学习急救和康复知识',
+      description: '救助受污染影响的海洋动物，学习野生动物急救和康复技术',
       icon: <Users className="h-8 w-8" />,
       difficulty: 'easy',
-      duration: '25分钟',
+      duration: '30分钟',
       type: 'game',
-      progress: 0,
-      locked: true
+      progress: completedModules.includes('marine-rescue') ? 100 : 0,
+      locked: !completedModules.includes('coral-restoration')
     }
   ];
 
@@ -170,6 +177,28 @@ const InteractiveLearning: React.FC = () => {
     }
   };
 
+  const handleModuleStart = (moduleId: string) => {
+    setActiveModule(moduleId);
+  };
+
+  const handleModuleComplete = (score: number) => {
+    setTotalScore(prev => prev + score);
+    setCompletedModules(prev => [...prev, activeModule!]);
+    setActiveModule(null);
+    
+    // 计算新等级
+    const newLevel = Math.floor(totalScore / 500) + 1;
+    setUserLevel(newLevel);
+  };
+
+  const handleModuleClose = () => {
+    setActiveModule(null);
+  };
+
+  const calculateOverallProgress = () => {
+    return Math.round((completedModules.length / learningModules.length) * 100);
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-green-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -197,24 +226,50 @@ const InteractiveLearning: React.FC = () => {
           animate={{ opacity: 1, y: 0 }}
           className="ocean-card p-6 mb-8"
         >
-          <div className="flex items-center justify-between mb-4">
-            <div>
-              <h3 className="text-lg font-semibold text-gray-900">学习进度</h3>
-              <p className="text-sm text-gray-600 mt-1">继续努力，解锁更多学习内容！</p>
-            </div>
-            <div className="text-right">
-              <div className="text-2xl font-bold text-ocean-600">{score}</div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-ocean-100 rounded-full mx-auto mb-3">
+                <Star className="h-8 w-8 text-ocean-600" />
+              </div>
+              <div className="text-2xl font-bold text-ocean-600">{totalScore}</div>
               <div className="text-sm text-gray-600">总积分</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-green-100 rounded-full mx-auto mb-3">
+                <TrendingUp className="h-8 w-8 text-green-600" />
+              </div>
+              <div className="text-2xl font-bold text-green-600">等级 {userLevel}</div>
+              <div className="text-sm text-gray-600">学习等级</div>
+            </div>
+            
+            <div className="text-center">
+              <div className="flex items-center justify-center w-16 h-16 bg-purple-100 rounded-full mx-auto mb-3">
+                <CheckCircle className="h-8 w-8 text-purple-600" />
+              </div>
+              <div className="text-2xl font-bold text-purple-600">{completedModules.length}/{learningModules.length}</div>
+              <div className="text-sm text-gray-600">已完成模块</div>
             </div>
           </div>
           
-          <div className="w-full bg-gray-200 rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-ocean-500 to-ocean-600 h-3 rounded-full transition-all duration-500"
-              style={{ width: '45%' }}
-            />
+          <div className="mt-6">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm font-medium text-gray-700">总体进度</span>
+              <span className="text-sm text-gray-600">{calculateOverallProgress()}%</span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-3">
+              <div 
+                className="bg-gradient-to-r from-ocean-500 to-ocean-600 h-3 rounded-full transition-all duration-500"
+                style={{ width: `${calculateOverallProgress()}%` }}
+              />
+            </div>
+            <p className="text-sm text-gray-600 mt-2">
+              {completedModules.length === learningModules.length 
+                ? '🎉 恭喜！你已完成所有学习模块！' 
+                : '继续努力，解锁更多学习内容！'
+              }
+            </p>
           </div>
-          <p className="text-sm text-gray-600 mt-2">总体完成度: 45%</p>
         </motion.div>
 
         {/* Learning Modules Grid */}
@@ -229,7 +284,7 @@ const InteractiveLearning: React.FC = () => {
               className={`ocean-card p-6 cursor-pointer transition-all ${
                 module.locked ? 'opacity-60' : 'hover:shadow-xl'
               }`}
-              onClick={() => !module.locked && setSelectedModule(module.id)}
+              onClick={() => !module.locked && handleModuleStart(module.id)}
             >
               {/* Module Header */}
               <div className="flex items-start justify-between mb-4">
@@ -382,6 +437,15 @@ const InteractiveLearning: React.FC = () => {
             </button>
           </div>
         </motion.div>
+
+        {/* Interactive Learning Module */}
+        {activeModule && (
+          <InteractiveLearningModule
+            moduleId={activeModule}
+            onComplete={handleModuleComplete}
+            onClose={handleModuleClose}
+          />
+        )}
       </div>
     </div>
   );

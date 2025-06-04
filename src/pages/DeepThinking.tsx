@@ -15,6 +15,7 @@ import {
   FileText,
   Video
 } from 'lucide-react';
+import { deepThinkingModulesContent } from '../data/deepThinkingModules';
 
 interface ThinkingModule {
   id: string;
@@ -24,7 +25,6 @@ interface ThinkingModule {
   difficulty: 'beginner' | 'intermediate' | 'advanced';
   topics: string[];
   completed: boolean;
-  content?: ModuleContent;
 }
 
 interface ModuleContent {
@@ -63,81 +63,6 @@ const DeepThinking: React.FC = () => {
   const [quizAnswers, setQuizAnswers] = useState<number[]>([]);
   const [showQuizResults, setShowQuizResults] = useState(false);
 
-  const modulesContent: Record<string, ModuleContent> = {
-    'plastic-pollution': {
-      objectives: [
-        '理解塑料污染的形成机制和传播路径',
-        '掌握微塑料对海洋生态系统的影响',
-        '了解塑料污染对人类健康的潜在威胁',
-        '学习减少塑料污染的实用策略'
-      ],
-      chapters: [
-        {
-          title: '第一章：塑料污染的起源',
-          content: '每年约有800万吨塑料垃圾进入海洋，相当于每分钟倾倒一卡车的塑料。这些塑料来自陆地活动、海上运输、渔业等多个源头。塑料的持久性使其在海洋中可存在数百年...',
-          videoUrl: 'https://example.com/plastic-origin',
-          readingTime: '15分钟'
-        },
-        {
-          title: '第二章：微塑料的形成与扩散',
-          content: '大型塑料垃圾在紫外线、海浪和微生物作用下逐渐分解成微塑料（直径小于5毫米）。这些微塑料通过洋流在全球海洋中扩散，从北极到南极，从海面到深海...',
-          readingTime: '12分钟'
-        },
-        {
-          title: '第三章：生态系统影响',
-          content: '海洋生物误食塑料垃圾，导致消化系统堵塞、营养不良甚至死亡。微塑料进入食物链，通过生物富集作用在顶级捕食者体内累积...',
-          readingTime: '18分钟'
-        }
-      ],
-      caseStudies: [
-        {
-          title: '太平洋垃圾带',
-          location: '北太平洋',
-          summary: '太平洋垃圾带是世界上最大的海洋塑料聚集区，面积相当于三个法国。',
-          impact: '影响超过600种海洋生物，每年导致10万只海洋哺乳动物死亡。',
-          solution: 'The Ocean Cleanup项目正在开发创新技术清理海洋塑料。'
-        },
-        {
-          title: '亨德森岛塑料危机',
-          location: '南太平洋',
-          summary: '这个无人居住的岛屿每平方米有671件塑料垃圾，是世界上塑料污染密度最高的地方。',
-          impact: '严重威胁当地特有物种的生存，破坏原始生态系统。',
-          solution: '国际合作清理行动和源头减塑措施。'
-        }
-      ],
-      quiz: [
-        {
-          question: '每年进入海洋的塑料垃圾约有多少？',
-          options: ['100万吨', '300万吨', '800万吨', '1500万吨'],
-          correctAnswer: 2,
-          explanation: '根据联合国环境规划署的数据，每年约有800万吨塑料垃圾进入海洋。'
-        },
-        {
-          question: '微塑料的定义是什么？',
-          options: [
-            '直径小于1毫米的塑料颗粒',
-            '直径小于5毫米的塑料颗粒',
-            '直径小于10毫米的塑料颗粒',
-            '肉眼看不见的塑料颗粒'
-          ],
-          correctAnswer: 1,
-          explanation: '微塑料是指直径小于5毫米的塑料颗粒，包括初级微塑料和次级微塑料。'
-        },
-        {
-          question: '以下哪项不是减少塑料污染的有效措施？',
-          options: [
-            '使用可重复使用的购物袋',
-            '将塑料垃圾倾倒入河流',
-            '支持循环经济',
-            '选择无包装或少包装产品'
-          ],
-          correctAnswer: 1,
-          explanation: '将垃圾倾倒入河流会加剧污染，正确的做法是妥善分类回收。'
-        }
-      ]
-    }
-  };
-
   const modules: ThinkingModule[] = [
     {
       id: 'plastic-pollution',
@@ -146,8 +71,7 @@ const DeepThinking: React.FC = () => {
       duration: '45分钟',
       difficulty: 'beginner',
       topics: ['微塑料', '食物链影响', '海洋生物', '人类健康'],
-      completed: true,
-      content: modulesContent['plastic-pollution']
+      completed: true
     },
     {
       id: 'chemical-contamination',
@@ -215,7 +139,8 @@ const DeepThinking: React.FC = () => {
   };
 
   const handleStartLearning = (module: ThinkingModule) => {
-    if (module.content) {
+    const moduleContent = deepThinkingModulesContent[module.id];
+    if (moduleContent) {
       setActiveModuleContent(module);
       setCurrentQuizIndex(0);
       setQuizAnswers([]);
@@ -228,7 +153,8 @@ const DeepThinking: React.FC = () => {
     newAnswers[currentQuizIndex] = answerIndex;
     setQuizAnswers(newAnswers);
 
-    if (currentQuizIndex < (activeModuleContent?.content?.quiz.length || 0) - 1) {
+    const moduleContent = activeModuleContent ? deepThinkingModulesContent[activeModuleContent.id] : null;
+    if (currentQuizIndex < (moduleContent?.quiz.length || 0) - 1) {
       setCurrentQuizIndex(currentQuizIndex + 1);
     } else {
       setShowQuizResults(true);
@@ -236,14 +162,15 @@ const DeepThinking: React.FC = () => {
   };
 
   const calculateQuizScore = () => {
-    if (!activeModuleContent?.content?.quiz) return 0;
+    const moduleContent = activeModuleContent ? deepThinkingModulesContent[activeModuleContent.id] : null;
+    if (!moduleContent?.quiz) return 0;
     let correct = 0;
-    activeModuleContent.content.quiz.forEach((question, index) => {
+    moduleContent.quiz.forEach((question, index) => {
       if (quizAnswers[index] === question.correctAnswer) {
         correct++;
       }
     });
-    return Math.round((correct / activeModuleContent.content.quiz.length) * 100);
+    return Math.round((correct / moduleContent.quiz.length) * 100);
   };
 
   return (
@@ -495,7 +422,7 @@ const DeepThinking: React.FC = () => {
                   学习目标
                 </h3>
                 <div className="space-y-3">
-                  {activeModuleContent.content?.objectives.map((objective, index) => (
+                  {deepThinkingModulesContent[activeModuleContent.id]?.objectives.map((objective, index) => (
                     <div key={index} className="flex items-start space-x-3">
                       <CheckCircle className="h-5 w-5 text-green-500 mt-0.5 flex-shrink-0" />
                       <p className="text-gray-700">{objective}</p>
@@ -509,7 +436,7 @@ const DeepThinking: React.FC = () => {
                   章节概览
                 </h3>
                 <div className="space-y-4">
-                  {activeModuleContent.content?.chapters.map((chapter, index) => (
+                  {deepThinkingModulesContent[activeModuleContent.id]?.chapters.map((chapter, index) => (
                     <div key={index} className="ocean-card p-4">
                       <div className="flex justify-between items-start mb-2">
                         <h4 className="font-semibold text-gray-900">{chapter.title}</h4>
@@ -537,8 +464,8 @@ const DeepThinking: React.FC = () => {
                       {calculateQuizScore()}%
                     </div>
                     <p className="text-gray-600 mb-6">
-                      你答对了 {activeModuleContent.content?.quiz.length || 0} 道题中的{' '}
-                      {activeModuleContent.content?.quiz.filter((q, i) => quizAnswers[i] === q.correctAnswer).length} 道
+                      你答对了 {deepThinkingModulesContent[activeModuleContent.id]?.quiz.length || 0} 道题中的{' '}
+                      {deepThinkingModulesContent[activeModuleContent.id]?.quiz.filter((q, i) => quizAnswers[i] === q.correctAnswer).length} 道
                     </p>
                     <button
                       onClick={() => {

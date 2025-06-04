@@ -176,7 +176,7 @@ const HomePage: React.FC = () => {
             </motion.div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 max-w-7xl mx-auto">
             {features.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -184,34 +184,105 @@ const HomePage: React.FC = () => {
                 whileInView={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: index * 0.1 }}
                 viewport={{ once: true }}
-                whileHover={{ y: -5 }}
-                className="group"
+                whileHover={{ y: -8, scale: 1.02 }}
+                className="group relative"
               >
-                <Link to={feature.path} className="block">
-                  <div className="ocean-card p-8 h-full">
-                    <div className={`inline-flex p-4 bg-gradient-to-r ${feature.color} rounded-xl mb-6 group-hover:scale-110 transition-transform duration-300`}>
-                      <feature.icon className="h-8 w-8 text-white" />
-                    </div>
+                <Link to={feature.path} className="block h-full">
+                  <div className="ocean-card p-8 h-full relative overflow-hidden">
+                    {/* Background Gradient Effect */}
+                    <div className={`absolute inset-0 bg-gradient-to-br ${feature.color} opacity-0 group-hover:opacity-5 transition-opacity duration-300`}></div>
                     
-                    <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-ocean-600 transition-colors">
-                      {feature.title}
-                    </h3>
-                    
-                    <p className="text-gray-600 mb-6 leading-relaxed">
-                      {feature.description}
-                    </p>
-                    
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium text-ocean-600 bg-ocean-50 px-3 py-1 rounded-full">
-                        {feature.stats}
-                      </span>
-                      <ArrowRight className="h-5 w-5 text-gray-400 group-hover:text-ocean-600 group-hover:translate-x-1 transition-all" />
+                    {/* Icon with Enhanced Animation */}
+                    <div className="relative z-10">
+                      <div className={`inline-flex p-4 bg-gradient-to-r ${feature.color} rounded-2xl mb-6 group-hover:scale-110 group-hover:rotate-3 transition-all duration-300 shadow-lg`}>
+                        <feature.icon className="h-8 w-8 text-white" />
+                      </div>
+                      
+                      <h3 className="text-2xl font-bold text-gray-900 mb-4 group-hover:text-ocean-600 transition-colors duration-300">
+                        {feature.title}
+                      </h3>
+                      
+                      <p className="text-gray-600 mb-6 leading-relaxed line-clamp-3">
+                        {feature.description}
+                      </p>
+                      
+                      {/* Enhanced Footer */}
+                      <div className="flex items-center justify-between pt-4 border-t border-gray-100">
+                        <div className="flex items-center space-x-2">
+                          <span className="text-sm font-semibold text-ocean-600 bg-ocean-50 px-3 py-1.5 rounded-full">
+                            {feature.stats}
+                          </span>
+                        </div>
+                        <div className="flex items-center text-ocean-600 group-hover:text-ocean-700">
+                          <span className="text-sm font-medium mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            探索
+                          </span>
+                          <ArrowRight className="h-5 w-5 group-hover:translate-x-1 transition-transform duration-300" />
+                        </div>
+                      </div>
                     </div>
                   </div>
                 </Link>
               </motion.div>
             ))}
           </div>
+
+          {/* Quick Access Section */}
+          <motion.div
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.6, delay: 0.8 }}
+            viewport={{ once: true }}
+            className="mt-20"
+          >
+            <div className="text-center mb-12">
+              <h3 className="text-2xl font-bold text-gray-900 mb-4">快速开始</h3>
+              <p className="text-gray-600 max-w-2xl mx-auto">
+                选择最适合你的学习路径，立即开始海洋保护知识的探索之旅
+              </p>
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-4xl mx-auto">
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="ocean-card p-6 text-center group cursor-pointer"
+              >
+                <Link to="/interactive-learning" className="block">
+                  <div className="w-16 h-16 bg-gradient-to-r from-green-500 to-emerald-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Play className="h-8 w-8 text-white" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">新手入门</h4>
+                  <p className="text-gray-600 text-sm">从交互式学习开始，轻松掌握基础知识</p>
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="ocean-card p-6 text-center group cursor-pointer"
+              >
+                <Link to="/deep-thinking" className="block">
+                  <div className="w-16 h-16 bg-gradient-to-r from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <Brain className="h-8 w-8 text-white" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">深度学习</h4>
+                  <p className="text-gray-600 text-sm">系统性学习海洋污染的科学原理</p>
+                </Link>
+              </motion.div>
+              
+              <motion.div
+                whileHover={{ scale: 1.05 }}
+                className="ocean-card p-6 text-center group cursor-pointer"
+              >
+                <Link to="/statistics" className="block">
+                  <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-cyan-600 rounded-full flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform duration-300">
+                    <BarChart3 className="h-8 w-8 text-white" />
+                  </div>
+                  <h4 className="text-lg font-bold text-gray-900 mb-2">数据分析</h4>
+                  <p className="text-gray-600 text-sm">查看全球海洋污染的最新数据</p>
+                </Link>
+              </motion.div>
+            </div>
+          </motion.div>
         </div>
       </section>
 
