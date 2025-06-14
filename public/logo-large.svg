@@ -1,0 +1,70 @@
+<svg width="128" height="128" viewBox="0 0 128 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景圆形 -->
+  <circle cx="64" cy="64" r="64" fill="url(#oceanGradientLarge)"/>
+  
+  <!-- 外层装饰圆环 -->
+  <circle cx="64" cy="64" r="58" stroke="url(#ringGradient)" stroke-width="2" fill="none" opacity="0.3"/>
+  
+  <!-- 海浪图案 - 多层次 -->
+  <path d="M16 70C24 62 32 62 40 70C48 78 56 78 64 70C72 62 80 62 88 70C96 78 104 78 112 70" 
+        stroke="#ffffff" stroke-width="3" fill="none" opacity="0.7"/>
+  <path d="M16 84C24 76 32 76 40 84C48 92 56 92 64 84C72 76 80 76 88 84C96 92 104 92 112 84" 
+        stroke="#ffffff" stroke-width="2.5" fill="none" opacity="0.5"/>
+  <path d="M16 96C24 88 32 88 40 96C48 104 56 104 64 96C72 88 80 88 88 96C96 104 104 104 112 96" 
+        stroke="#ffffff" stroke-width="2" fill="none" opacity="0.3"/>
+  
+  <!-- 中央保护盾牌 -->
+  <path d="M64 24L76 36V56C76 68 70 76 64 80C58 76 52 68 52 56V36L64 24Z" 
+        fill="#ffffff" stroke="#0EA5E9" stroke-width="2"/>
+  
+  <!-- 盾牌内的详细图案 -->
+  <!-- 海洋生物 - 鱼 -->
+  <ellipse cx="64" cy="44" rx="4" ry="2" fill="#0EA5E9"/>
+  <path d="M60 44L58 42L58 46L60 44Z" fill="#0EA5E9"/>
+  <circle cx="66" cy="43" r="0.5" fill="#ffffff"/>
+  
+  <!-- 海草/珊瑚 -->
+  <path d="M56 52C58 48 62 48 64 52C66 48 70 48 72 52" stroke="#10B981" stroke-width="2" fill="none"/>
+  <path d="M58 60L64 64L70 60" stroke="#0EA5E9" stroke-width="2" fill="none"/>
+  
+  <!-- 水波纹 -->
+  <path d="M54 66C58 64 62 64 66 66C70 68 74 68 78 66" stroke="#0EA5E9" stroke-width="1" fill="none" opacity="0.6"/>
+  
+  <!-- 装饰性元素 -->
+  <!-- 气泡 -->
+  <circle cx="40" cy="40" r="3" fill="#ffffff" opacity="0.8"/>
+  <circle cx="88" cy="48" r="2" fill="#ffffff" opacity="0.6"/>
+  <circle cx="36" cy="96" r="2" fill="#ffffff" opacity="0.7"/>
+  <circle cx="92" cy="92" r="3" fill="#ffffff" opacity="0.5"/>
+  <circle cx="24" cy="60" r="1.5" fill="#ffffff" opacity="0.9"/>
+  <circle cx="104" cy="68" r="1.5" fill="#ffffff" opacity="0.7"/>
+  
+  <!-- 小鱼群 -->
+  <g opacity="0.6">
+    <ellipse cx="28" cy="32" rx="2" ry="1" fill="#ffffff"/>
+    <ellipse cx="32" cy="30" rx="2" ry="1" fill="#ffffff"/>
+    <ellipse cx="30" cy="35" rx="2" ry="1" fill="#ffffff"/>
+  </g>
+  
+  <g opacity="0.5">
+    <ellipse cx="96" cy="36" rx="2" ry="1" fill="#ffffff"/>
+    <ellipse cx="100" cy="34" rx="2" ry="1" fill="#ffffff"/>
+    <ellipse cx="98" cy="39" rx="2" ry="1" fill="#ffffff"/>
+  </g>
+  
+  <!-- 渐变定义 -->
+  <defs>
+    <linearGradient id="oceanGradientLarge" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#0EA5E9;stop-opacity:1" />
+      <stop offset="30%" style="stop-color:#0284C7;stop-opacity:1" />
+      <stop offset="70%" style="stop-color:#0369A1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#0F172A;stop-opacity:1" />
+    </linearGradient>
+    
+    <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.8" />
+      <stop offset="50%" style="stop-color:#10B981;stop-opacity:0.6" />
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0.4" />
+    </linearGradient>
+  </defs>
+</svg> 
